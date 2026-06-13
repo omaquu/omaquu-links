@@ -26,7 +26,7 @@ def get_cookie_pw(): return request.cookies.get(COOKIE_NAME, '')
 def is_authenticated():
     stored = get_cookie_pw()
     if not stored: return False
-    try: return bcrypt.checkpw(stored.encode(), _ADMIN_HASH.encode())
+    try: return bcrypt.checkpw(ADMIN_PASSWORD.encode(), stored.encode())
     except: return False
 
 def auth_required(f):
