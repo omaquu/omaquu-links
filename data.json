@@ -3,7 +3,7 @@
         "username": "@omaquu",
         "displayName": "omaquu",
         "bio": "Someloukkaantuja",
-        "avatar": "https://i.imgur.com/omaquu-avatar.png"
+        "avatar": "https://static-cdn.jtvnw.net/jtv_user_pictures/62287f97-d8af-4736-b530-3300fd0ec218-profile_image-70x70.png"
     },
     "links": [
         {
@@ -41,7 +41,7 @@
         {
             "id": "x",
             "title": "X",
-            "url": "https://x.com/omaquu",
+            "url": "https://x.com/omaquutv",
             "icon": "x",
             "category": "social",
             "live": false
@@ -91,8 +91,8 @@
         {
             "id": "biohackbalance",
             "store": "Biohackbalance.se",
-            "code": "OMAQUU10",
-            "discount": "10%",
+            "code": "YKSIROTTA",
+            "discount": "15%",
             "description": "Superfood ja biohackaustuotteet",
             "url": "https://biohackbalance.se",
             "expires": "2025-12-31"

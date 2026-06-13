@@ -1,14 +1,14 @@
 {
     "accent": "#ff6b35",
     "accentGlow": "rgba(255, 107, 53, 0.3)",
-    "bgPrimary": "#0a0a0f",
-    "bgSecondary": "#12121a",
     "bgCard": "#1a1a24",
     "bgCardHover": "#22222e",
-    "textPrimary": "#ffffff",
-    "textSecondary": "#a0a0b0",
-    "textMuted": "#606070",
+    "bgPrimary": "#0a0a0f",
+    "bgSecondary": "#12121a",
     "border": "#2a2a3a",
     "live": "#ef4444",
-    "success": "#10b981"
+    "success": "#10b981",
+    "textMuted": "#606070",
+    "textPrimary": "#ffffff",
+    "textSecondary": "#a0a0b0"
 }
