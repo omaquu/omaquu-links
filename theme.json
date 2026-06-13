@@ -8,5 +8,9 @@
     "textSecondary": "#4ade80",
     "bgImage": "",
     "bgAnimation": "matrix",
-    "animationColor": "#10b981"
+    "animationColor": "#10b981",
+    "animationSpeed": "8",
+    "bgGradient1": "",
+    "bgGradient2": "",
+    "bgGradientAngle": "180"
 }

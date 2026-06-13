@@ -140,14 +140,21 @@
   .tag-section details { margin-bottom: 6px; }
   .tag-section summary { cursor: pointer; padding: 6px; font-size: 0.85rem; }
   /* presets */
-  .preset-grid { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
-  .preset {
-    padding: 6px 10px; border-radius: 8px; cursor: pointer;
-    background: #1c1c28; border: 1px solid #282838; font-size: 0.78rem;
-  }
-  .preset:hover { border-color: #ff6b35; }
-  /* Theme preview card */
-  .theme-preview-card {
+  .preset-grid { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+.preset {
+  padding: 8px 10px; border-radius: 10px; cursor: pointer;
+  border: 2px solid transparent; font-size: 0.78rem;
+  min-width: 108px; text-align: center;
+  position: relative; overflow: hidden; transition: transform 0.15s, border-color 0.15s;
+}
+.preset-box { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.preset-swatch-row { display: flex; gap: 3px; }
+.preset-swatch { width: 16px; height: 16px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15); }
+.preset-label { font-size: 0.72rem; color: #ccc; }
+.preset:hover { border-color: #ff6b35 !important; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+.preset.active-preset { border-color: #ff6b35; }
+
+.theme-preview-card {
     background: #1c1c28; border: 1px solid #333; border-radius: 12px;
     padding: 16px; display: flex; gap: 16px; align-items: center;
   }
@@ -236,7 +243,12 @@
       </div>
       <div class="row">
         <div class="col"><label>Embed arvo (username / video-id / URL)</label><input id="lnkEmbedVal"></div>
-        <div class="col"><label>Väri</label><input type="color" id="lnkColor" class="color-input" value="#ff6b35"></div>
+        <div class="col"><label>Väri</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="color" id="lnkColor" class="color-input" value="#ff6b35">
+            <button class="small" onclick="setAllColors('links')" title="Aseta kaikille">🎨 Kaikki</button>
+          </div>
+        </div>
       </div>
       <div class="row">
         <div class="col"><label>Tagit (comma)</label><input id="lnkTags" placeholder="tech, kauppa"></div>
@@ -265,7 +277,12 @@
       <div class="row">
         <div class="col-2"><label>Kuvaus</label><input id="cdDescription"></div>
         <div class="col"><label>URL</label><input id="cdUrl" placeholder="https://..."></div>
-        <div class="col"><label>Väri</label><input type="color" id="cdColor" class="color-input" value="#ff6b35"></div>
+        <div class="col"><label>Väri</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="color" id="cdColor" class="color-input" value="#ff6b35">
+            <button class="small" onclick="setAllColors('codes')" title="Aseta kaikille">🎨 Kaikki</button>
+          </div>
+        </div>
       </div>
       <div class="row">
         <div class="col"><label>Tagit (comma)</label><input id="cdTags" placeholder="tech, kauppa"></div>
@@ -301,7 +318,12 @@
       </div>
       <div class="row">
         <div class="col"><label>Kuva URL</label><input id="afImage" placeholder="https://..."></div>
-        <div class="col"><label>Väri</label><input type="color" id="afColor" class="color-input" value="#ff6b35"></div>
+        <div class="col"><label>Väri</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="color" id="afColor" class="color-input" value="#ff6b35">
+            <button class="small" onclick="setAllColors('affiliates')" title="Aseta kaikille">🎨 Kaikki</button>
+          </div>
+        </div>
       </div>
       <div class="row">
         <div class="col"><label>Tagit (comma)</label><input id="afTags" placeholder="tech, kauppa"></div>
@@ -383,22 +405,26 @@
     <div class="card">
       <h2>Teema-värit</h2>
       <div class="grid-2">
-        <div><label>Accent</label><input type="color" id="tAccent" onchange="saveTheme()"></div>
-        <div><label>Animation color</label><input type="color" id="tAnim" onchange="saveTheme()"></div>
-        <div><label>bgPrimary</label><input type="color" id="tBg1" onchange="saveTheme()"></div>
-        <div><label>bgSecondary</label><input type="color" id="tBg2" onchange="saveTheme()"></div>
-        <div><label>bgCard</label><input type="color" id="tCard" onchange="saveTheme()"></div>
-        <div><label>bgCardHover</label><input type="color" id="tCardH" onchange="saveTheme()"></div>
-        <div><label>textPrimary</label><input type="color" id="tTxt" onchange="saveTheme()"></div>
-        <div><label>textSecondary</label><input type="color" id="tTxt2" onchange="saveTheme()"></div>
+        <div><label>Accent</label><input type="color" id="tAccent" onchange="saveTheme();updateThemePreview()"></div>
+        <div><label>Animation color</label><input type="color" id="tAnim" onchange="saveTheme();updateThemePreview()"></div>
+        <div><label>bgPrimary</label><input type="color" id="tBg1" onchange="saveTheme();updateThemePreview()"></div>
+        <div><label>bgSecondary</label><input type="color" id="tBg2" onchange="saveTheme();updateThemePreview()"></div>
+        <div><label>bgCard</label><input type="color" id="tCard" onchange="saveTheme();updateThemePreview()"></div>
+        <div><label>bgCardHover</label><input type="color" id="tCardH" onchange="saveTheme();updateThemePreview()"></div>
+        <div><label>textPrimary</label><input type="color" id="tTxt" onchange="saveTheme();updateThemePreview()"></div>
+        <div><label>textSecondary</label><input type="color" id="tTxt2" onchange="saveTheme();updateThemePreview()"></div>
       </div>
     </div>
     <div class="card">
       <h2>Taustakuva & animaatiot</h2>
       <div class="row">
-        <div class="col-2"><label>Taustakuva URL (jätä tyhjäksi = ei kuvaa)</label><input id="tBgImage" placeholder="https://..." oninput="saveTheme()"></div>
+        <div class="col"><label>Taustakuva URL (jätä tyhjäksi = ei kuvaa)</label><input id="tBgImage" placeholder="https://..." oninput="saveTheme()"></div>
+        <div class="col"><label>Gradient väri 1 (jätä tyhjäksi = ei gradienttia)</label><input type="color" id="tGrad1" onchange="saveTheme();updateThemePreview()"></div>
+        <div class="col"><label>Gradient väri 2</label><input type="color" id="tGrad2" onchange="saveTheme();updateThemePreview()"></div>
+      </div>
+      <div class="row" style="margin-top:8px">
         <div class="col"><label>Animaatio</label>
-          <select id="tAnimType" onchange="saveTheme()">
+          <select id="tAnimType" onchange="saveTheme();updateThemePreview()">
             <option value="">Ei animaatiota</option>
             <option value="particles">Partikkelit</option>
             <option value="matrix">Matrix</option>
@@ -408,13 +434,28 @@
             <option value="bubbles">Kuplat</option>
             <option value="aurora">Revontulet</option>
             <option value="galaxy">Galaksi</option>
+            <option value="gradient-shift">Gradientti-shiftaus</option>
+            <option value="aurora-shift">Aurora-shiftaus</option>
           </select>
         </div>
+        <div class="col"><label>Gradient kulma (0-360°)</label><input type="number" id="tGradAngle" value="180" min="0" max="360" onchange="saveTheme();updateThemePreview()"></div>
+        <div class="col"><label>Anim. nopeus (s)</label><input type="number" id="tAnimSpeed" value="8" min="1" max="30" onchange="saveTheme()"></div>
       </div>
       <h3 style="margin-top:12px">Valmiit teemat (klikkaa &rarr; esikatsele &rarr; tallenna)</h3>
       <div class="preset-grid" id="presetGrid"></div>
-      <div id="themePreview" class="theme-preview-card" style="margin-top:12px"></div>
-      <button class="small" onclick="saveTheme()" style="margin-top:8px">Tallenna teema</button>
+      <h3 style="margin-top:12px">Esikatselu</h3>
+      <div id="themePreview" class="theme-preview-wrap" style="margin-top:8px;border-radius:12px;overflow:hidden;border:1px solid #333;padding:0">
+        <div id="prevBg" style="padding:20px;display:flex;flex-direction:column;gap:8px">
+          <div id="prevCard" style="padding:12px 16px;border-radius:10px;font-size:0.85rem">Linkki-kortti</div>
+          <div id="prevCardH" style="padding:12px 16px;border-radius:10px;font-size:0.85rem;border-left:4px solid #ff6b35">Hover: #ff6b35</div>
+        </div>
+        <div id="animPrev" style="height:60px;display:none"></div>
+      </div>
+      <div id="themeInfo" style="font-size:0.72rem;color:#888;margin-top:6px"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="small primary" onclick="saveTheme()">💾 Tallenna teema</button>
+        <button class="small" onclick="updateThemePreview()">🔄 Päivitä esikatselu</button>
+      </div>
     </div>
   </div>
 
@@ -908,17 +949,22 @@ function hex(name, val) {
 }
 async function loadTheme() {
   const t = await api('/theme');
-  hex('tAccent',  t.accent);
-  hex('tBg1',     t.bgPrimary);
-  hex('tBg2',     t.bgSecondary);
-  hex('tCard',    t.bgCard);
-  hex('tCardH',   t.bgCardHover);
-  hex('tTxt',     t.textPrimary);
-  hex('tTxt2',    t.textSecondary);
-  hex('tAnim',    t.animationColor);
-  document.getElementById('tBgImage').value  = t.bgImage  || '';
-  document.getElementById('tAnimType').value   = t.bgAnimation || '';
+  hex('tAccent',   t.accent);
+  hex('tBg1',      t.bgPrimary);
+  hex('tBg2',      t.bgSecondary);
+  hex('tCard',     t.bgCard);
+  hex('tCardH',    t.bgCardHover);
+  hex('tTxt',      t.textPrimary);
+  hex('tTxt2',     t.textSecondary);
+  hex('tAnim',     t.animationColor);
+  hex('tGrad1',    t.bgGradient1 || '');
+  hex('tGrad2',    t.bgGradient2 || '');
+  document.getElementById('tBgImage').value    = t.bgImage    || '';
+  document.getElementById('tAnimType').value  = t.bgAnimation || '';
+  document.getElementById('tAnimSpeed').value = t.animationSpeed || '8';
+  document.getElementById('tGradAngle').value = t.bgGradientAngle || '180';
   await loadPresets();
+  setTimeout(updateThemePreview, 200);
 }
 function themePayload() {
   return {
@@ -932,6 +978,10 @@ function themePayload() {
     bgImage:        document.getElementById('tBgImage').value,
     bgAnimation:    document.getElementById('tAnimType').value,
     animationColor: hex('tAnim'),
+    animationSpeed: document.getElementById('tAnimSpeed').value || '8',
+    bgGradient1:    hex('tGrad1'),
+    bgGradient2:    hex('tGrad2'),
+    bgGradientAngle: document.getElementById('tGradAngle').value || '180',
   };
 }
 async function saveTheme() {
@@ -943,9 +993,16 @@ async function loadPresets() {
   const names = {orange:'🍊 Orange', purple:'💜 Purple', matrix:'🟢 Matrix', stars:'⭐ Stars', midnight:'🌙 Midnight', neon:'⚡ Neon', fire:'🔥 Fire', ocean:'🌊 Ocean', aurora:'🌌 Aurora', galaxy:'🌌 Galaxy'};
   const simpleNames = {orange:'Orange', purple:'Purple', matrix:'Matrix', stars:'Stars', midnight:'Midnight', neon:'Neon', fire:'Fire', ocean:'Ocean', aurora:'Aurora', galaxy:'Galaxy'};
   grid.innerHTML = Object.entries(presets).map(([k,v]) => `
-    <div class="preset" onclick="applyPreset('${k}')" title="${simpleNames[k]||k}\nAccent: ${v.accent}\nTausta: ${v.bgPrimary}\nKortti: ${v.bgCard}\nAnimaatio: ${v.bgAnimation||'Ei'}">
-      <span style="display:inline-block;width:14px;height:14px;background:${v.accent};border-radius:50%;vertical-align:middle"></span>
-      ${names[k]||k}
+    <div class="preset" onclick="applyPreset('${k}')" title="${simpleNames[k]||k}\nAccent: ${v.accent}\nTausta: ${v.bgPrimary}\nKortti: ${v.bgCard}\nAnimaatio: ${v.bgAnimation||'Ei'}" style="background:${v.bgPrimary};color:${v.textPrimary||'#fff'}">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
+        <div style="display:flex;gap:3px">
+          <span style="width:15px;height:15px;border-radius:3px;background:${v.bgPrimary};border:1px solid rgba(255,255,255,0.1);display:inline-block"></span>
+          <span style="width:15px;height:15px;border-radius:3px;background:${v.bgSecondary};border:1px solid rgba(255,255,255,0.1);display:inline-block"></span>
+          <span style="width:15px;height:15px;border-radius:3px;background:${v.bgCard};border:1px solid rgba(255,255,255,0.1);display:inline-block"></span>
+          <span style="width:15px;height:15px;border-radius:50%;background:${v.accent};border:1px solid rgba(255,255,255,0.2);display:inline-block"></span>
+        </div>
+        <span style="font-size:0.72rem">${names[k]||k}</span>
+      </div>
     </div>`).join('');
 }
 async function applyPreset(name) {
@@ -990,21 +1047,129 @@ function addTagToInput(inputId, tag) {
 
 // ── Theme live preview ──────────────────────────────────────
 function updateThemePreview() {
-  const get = id => { const el = document.getElementById(id); return el ? el.value : null; };
-  const ac = get('tAccent') || '#ff6b35';
-  const bg = get('tBg1') || get('tBg') || '#0a0a0f';
-  const ca = get('tCard') || '#1a1a24';
-  const ch = get('tCardH') || '#22222e';
-  const tx = get('tTxt') || '#ffffff';
-  const an = get('tAnimType') || '';
+  const get = id => { const el = document.getElementById(id); return el ? (el.value || el.checked) : null; };
+  const ac  = get('tAccent')  || '#ff6b35';
+  const bg  = get('tBg1')     || '#0a0a0f';
+  const bg2 = get('tBg2')     || '#12121a';
+  const ca  = get('tCard')    || '#1a1a24';
+  const ch  = get('tCardH')   || '#22222e';
+  const tx  = get('tTxt')     || '#ffffff';
+  const an  = get('tAnimType')|| '';
+
   const elBg = document.getElementById('prevBg');
+  if (elBg) {
+    const g1 = get('tGrad1');
+    const g2 = get('tGrad2');
+    if (g1 && g2) {
+      const angle = get('tGradAngle') || 180;
+      elBg.style.background = `linear-gradient(${angle}deg, ${g1}, ${g2})`;
+    } else {
+      elBg.style.background = bg;
+    }
+    elBg.style.color = tx;
+  }
   const elCard = document.getElementById('prevCard');
+  if (elCard) { elCard.style.background = ca; elCard.style.color = tx; }
   const elCardH = document.getElementById('prevCardH');
+  if (elCardH) {
+    elCardH.style.background = ch; elCardH.style.color = tx;
+    elCardH.style.borderLeft = `4px solid ${ac}`;
+    elCardH.textContent = `Hover: ${ac}`;
+  }
   const elInfo = document.getElementById('themeInfo');
-  if (elBg) { elBg.style.background = bg; elBg.style.color = tx; }
-  if (elCard) { elCard.style.background = ca; elCard.style.color = tx; elCard.textContent = 'Linkki-kortti'; }
-  if (elCardH) { elCardH.style.background = ch; elCardH.style.color = tx; elCardH.textContent = 'Hover: ' + ac; elCardH.style.borderLeft = `4px solid ${ac}`; }
-  if (elInfo) elInfo.textContent = `Accent: ${ac} | Tausta: ${bg} | Kortti: ${ca} | Hover: ${ch} | Anim: ${an}`;
+  if (elInfo) {
+    const g1=get('tGrad1'), g2=get('tGrad2');
+    const gradTxt = (g1&&g2) ? ` | Gradient: ${g1}→${g2}` : '';
+    elInfo.textContent = `Accent: ${ac} | bgPrimary: ${bg} | bgSecondary: ${bg2} | Kortti: ${ca} | Hover: ${ch} | Anim: ${an||'ei'}${gradTxt}`;
+  }
+
+  // Mini animation preview
+  const animPrev = document.getElementById('animPrev');
+  if (!animPrev) return;
+  if (!an || an === 'none' || an === '') {
+    animPrev.style.display = 'none';
+    return;
+  }
+  animPrev.style.display = 'block';
+  animPrev.innerHTML = `<canvas id="animCanvas" style="width:100%;height:60px"></canvas>`;
+  const canvas = document.getElementById('animCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth * 2;
+  canvas.height = 120;
+  ctx.scale(2, 2);
+  let frame = 0;
+  const speed = parseInt(get('tAnimSpeed') || '8');
+  const ac2 = ac;
+  function draw() {
+    frame++;
+    ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+    if (an === 'gradient-shift') {
+      const t = (Math.sin(frame * 0.02) + 1) / 2;
+      const grad = ctx.createLinearGradient(0, 0, canvas.offsetWidth, 0);
+      grad.addColorStop(0, ac2);
+      grad.addColorStop(t, g1 || ac2);
+      grad.addColorStop(1, g2 || '#ff6b35');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+    } else if (an === 'aurora-shift') {
+      for (let i = 0; i < 3; i++) {
+        const y = canvas.offsetHeight * 0.3 + Math.sin(frame * 0.01 + i * 2) * 20;
+        const grd = ctx.createLinearGradient(0, y - 15, canvas.offsetWidth, y + 15);
+        grd.addColorStop(0, ac2 + '00');
+        grd.addColorStop(0.5, ac2 + (Math.floor(Math.abs(Math.sin(frame * 0.02 + i)) * 99)).toString().padStart(2, '0'));
+        grd.addColorStop(1, ac2 + '00');
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, y - 15, canvas.offsetWidth, 30);
+      }
+    } else if (an === 'particles') {
+      for (let i = 0; i < 20; i++) {
+        const x = (Math.sin(frame * 0.03 + i) * 0.5 + 0.5) * canvas.offsetWidth;
+        const y = ((frame * speed * 0.1 + i * 17) % canvas.offsetHeight);
+        ctx.fillStyle = ac2; ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
+      }
+    } else if (an === 'stars') {
+      ctx.fillStyle = ac2;
+      for (let i = 0; i < 15; i++) {
+        const x = (i * 73 + frame * 0.5) % canvas.offsetWidth;
+        const y = (i * 37 + frame * 0.15) % canvas.offsetHeight;
+        ctx.fillRect(x, y, 2, 2);
+      }
+    } else if (an === 'matrix') {
+      ctx.fillStyle = 'rgba(0,0,0,0.08)'; ctx.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+      ctx.fillStyle = ac2; ctx.font = '12px monospace';
+      for (let i = 0; i < 8; i++) {
+        const x = i * 18;
+        const y = (frame + i * 13) % canvas.offsetHeight;
+        ctx.fillText(String.fromCharCode(0x30A0 + Math.random() * 96), x, y);
+      }
+    } else if (an === 'bubbles') {
+      ctx.fillStyle = ac2 + '33';
+      for (let i = 0; i < 12; i++) {
+        const x = (i * 47 + frame * 0.5) % canvas.offsetWidth;
+        const y = ((frame * 0.3 + i * 23) % canvas.offsetHeight);
+        ctx.beginPath(); ctx.arc(x, y, 5 + i % 5, 0, Math.PI * 2); ctx.fill();
+      }
+    } else if (an === 'aurora') {
+      for (let i = 0; i < 3; i++) {
+        const y = canvas.offsetHeight * 0.3 + Math.sin(frame * 0.015 + i * 1.5) * 20;
+        const g = ctx.createLinearGradient(0, y - 12, canvas.offsetWidth, y + 12);
+        g.addColorStop(0, ac2 + '00'); g.addColorStop(0.5, ac2 + '66'); g.addColorStop(1, ac2 + '00');
+        ctx.fillStyle = g; ctx.fillRect(0, y - 12, canvas.offsetWidth, 24);
+      }
+    } else if (an === 'galaxy') {
+      for (let i = 0; i < 30; i++) {
+        const angle2 = (i / 30) * Math.PI * 2 + frame * 0.01;
+        const r = 10 + i * 2;
+        const x = canvas.offsetWidth / 2 + Math.cos(angle2) * r;
+        const y = canvas.offsetHeight / 2 + Math.sin(angle2) * r;
+        ctx.fillStyle = ac2 + Math.floor(255 - i * 5).toString(16).padStart(2, '0');
+        ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
 }
 
 function updateAnimPreview() {
@@ -1084,6 +1249,19 @@ function detectEmbedFromUrl() {
 }
 async function updateItem(type, id, patch) {
   await api('/'+type+'/'+id, {method:'PUT', body: JSON.stringify(patch)});
+  if (type==='links') loadLinks(); else if (type==='codes') loadCodes(); else loadAffiliates();
+}
+
+// Mass color update — set same color for all items of a type
+async function setAllColors(type) {
+  const colorMap = { links: 'lnkColor', codes: 'cdColor', affiliates: 'afColor' };
+  const color = document.getElementById(colorMap[type])?.value;
+  if (!color) return;
+  if (!confirm(`Asetetaanko väri ${color} kaikille ${type}?`)) return;
+  const list = await api('/'+type);
+  for (const item of list) {
+    await api('/'+type+'/'+item.id, {method:'PUT', body: JSON.stringify({color})});
+  }
   if (type==='links') loadLinks(); else if (type==='codes') loadCodes(); else loadAffiliates();
 }
 
