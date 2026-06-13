@@ -463,7 +463,7 @@ function switchTab(t) {
   document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden'));
   document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
   document.getElementById('tab-'+t).classList.remove('hidden');
-  event.target.classList.add('active');
+  document.querySelector(`.tab[data-tab='${t}']`).classList.add('active');
   currentTab = t;
 }
 
