@@ -1,13 +1,13 @@
 {
-    "accent": "#ff6b35",
-    "bgPrimary": "#0a0a0f",
-    "bgSecondary": "#12121a",
-    "bgCard": "#1a1a24",
-    "bgCardHover": "#22222e",
-    "textPrimary": "#ffffff",
-    "textSecondary": "#a0a0b0",
+    "accent": "#ff4500",
+    "bgPrimary": "#0c0402",
+    "bgSecondary": "#120804",
+    "bgCard": "#1a0e08",
+    "bgCardHover": "#24160e",
+    "textPrimary": "#fed7aa",
+    "textSecondary": "#fdba74",
     "bgImage": "",
-    "bgAnimation": "",
-    "animationColor": "#ff6b35",
-    "accentGlow": "rgba(255,107,53,0.3)"
+    "bgAnimation": "fire",
+    "animationColor": "#ff4500",
+    "accentGlow": "rgba(255,69,0,0.3)"
 }
