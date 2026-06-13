@@ -10,12 +10,17 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
+    <!-- Background animation canvas -->
+    <canvas id="bgCanvas"></canvas>
+    <!-- Background image overlay -->
+    <div id="bgImageOverlay"></div>
+
     <div class="app">
-        <!-- Kick Live Embed (shown only when live) -->
+        <!-- Kick Live Embed (shown when live OR streamAlwaysVisible) -->
         <div class="kick-embed" id="kickEmbed" style="display:none;">
             <div class="kick-embed-header">
-                <span class="live-dot"></span>
-                <span class="kick-embed-title">LIVE @omaquu</span>
+                <span class="live-dot" id="liveDot"></span>
+                <span class="kick-embed-title" id="embedTitle">LIVE @omaquu</span>
             </div>
             <iframe 
                 id="kickFrame"
@@ -34,6 +39,8 @@
             </div>
             <h1 class="display-name" id="displayName"></h1>
             <p class="bio" id="bio"></p>
+            <!-- Quick Links -->
+            <div class="quick-links" id="quickLinks"></div>
         </header>
 
         <!-- Tab Navigation -->
@@ -66,7 +73,6 @@
 
             <!-- Affiliates / Shop Tab -->
             <section class="tab-content" id="affiliates">
-                <!-- Search + Filter bar -->
                 <div class="shop-controls">
                     <div class="search-bar">
                         <i data-lucide="search" class="search-icon"></i>

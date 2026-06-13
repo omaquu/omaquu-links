@@ -12,7 +12,8 @@
             "url": "https://www.youtube.com/@omaquu",
             "icon": "youtube",
             "category": "social",
-            "live": false
+            "live": false,
+            "sort_order": 2
         },
         {
             "id": "twitch",
@@ -20,7 +21,8 @@
             "url": "https://www.twitch.tv/omaquu",
             "icon": "twitch",
             "category": "stream",
-            "live": true
+            "live": true,
+            "sort_order": 3
         },
         {
             "id": "kick",
@@ -28,7 +30,8 @@
             "url": "https://kick.com/omaquu",
             "icon": "kick",
             "category": "stream",
-            "live": true
+            "live": true,
+            "sort_order": 4
         },
         {
             "id": "tiktok",
@@ -36,7 +39,8 @@
             "url": "https://www.tiktok.com/@omaquu",
             "icon": "tiktok",
             "category": "social",
-            "live": false
+            "live": false,
+            "sort_order": 5
         },
         {
             "id": "x",
@@ -44,7 +48,8 @@
             "url": "https://x.com/omaquutv",
             "icon": "x",
             "category": "social",
-            "live": false
+            "live": false,
+            "sort_order": 6
         },
         {
             "id": "instagram",
@@ -52,7 +57,8 @@
             "url": "https://www.instagram.com/omaquu",
             "icon": "instagram",
             "category": "social",
-            "live": false
+            "live": false,
+            "sort_order": 7
         },
         {
             "id": "snapchat",
@@ -60,7 +66,8 @@
             "url": "https://www.snapchat.com/add/omaquu",
             "icon": "snapchat",
             "category": "social",
-            "live": false
+            "live": false,
+            "sort_order": 8
         },
         {
             "id": "discord",
@@ -68,7 +75,8 @@
             "url": "https://discord.gg/A2MtYsd",
             "icon": "discord",
             "category": "social",
-            "live": false
+            "live": false,
+            "sort_order": 9
         },
         {
             "id": "kofi",
@@ -76,7 +84,8 @@
             "url": "https://ko-fi.com/omaquu",
             "icon": "kofi",
             "category": "support",
-            "live": false
+            "live": false,
+            "sort_order": 10
         },
         {
             "id": "email",
@@ -84,13 +93,14 @@
             "url": "mailto:omaquu@example.com",
             "icon": "email",
             "category": "contact",
-            "live": false
+            "live": false,
+            "sort_order": 11
         },
         {
             "title": "Testi",
             "url": "https://example.com",
             "color": "#ff0000",
-            "sort_order": 0,
+            "sort_order": 1,
             "id": "a727beb6"
         },
         {
