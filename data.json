@@ -95,13 +95,6 @@
             "category": "contact",
             "live": false,
             "sort_order": 10
-        },
-        {
-            "title": "Testi",
-            "url": "https://example.com",
-            "color": "#ff0000",
-            "sort_order": 2,
-            "id": "a727beb6"
         }
     ],
     "codes": [
