@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@omaquu Admin</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0a0a0f; --bg2: #12121a; --bg3: #1a1a24;
+            --accent: #ff6b35; --border: #2a2a3a;
+            --text: #fff; --text2: #a0a0b0; --text3: #606070;
+            --success: #10b981; --danger: #ef4444;
+        }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        .app { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+        
+        /* ─── Login Screen ─── */
+        .login-screen {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            background: var(--bg);
+        }
+        .login-box {
+            background: var(--bg3); border: 1px solid var(--border); border-radius: 16px;
+            padding: 2.5rem; width: 100%; max-width: 380px; text-align: center;
+        }
+        .login-box h2 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+        .login-box h2 span { color: var(--accent); }
+        .login-box p { color: var(--text2); font-size: 0.85rem; margin-bottom: 1.5rem; }
+        .login-input {
+            width: 100%; background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 10px; padding: 0.75rem 1rem; color: var(--text);
+            font-size: 1rem; margin-bottom: 1rem; outline: none;
+        }
+        .login-input:focus { border-color: var(--accent); }
+        .login-error { color: var(--danger); font-size: 0.8rem; margin-top: -0.5rem; margin-bottom: 0.75rem; display: none; }
+        .login-btn {
+            width: 100%; padding: 0.75rem; background: var(--accent); color: white;
+            border: none; border-radius: 10px; font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: opacity 0.2s;
+        }
+        .login-btn:hover { opacity: 0.9; }
+        .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Header */
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border); }
+        .header h1 { font-size: 1.5rem; }
+        .header h1 span { color: var(--accent); }
+        .badge { background: var(--success); color: white; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 10px; font-weight: 600; }
+        .preview-link { color: var(--accent); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 0.3rem; }
+        .preview-link:hover { text-decoration: underline; }
+
+        /* Sections */
+        .section { margin-bottom: 2rem; }
+        .section-title { display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text); }
+        .section-title i { color: var(--accent); width: 20px; height: 20px; }
+
+        /* Cards */
+        .card { background: var(--bg3); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+        .card-title { font-weight: 600; font-size: 0.95rem; }
+        .card-actions { display: flex; gap: 0.5rem; }
+        
+        /* Form */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        .form-grid.full { grid-template-columns: 1fr; }
+        .form-group { display: flex; flex-direction: column; gap: 0.25rem; }
+        .form-group.full { grid-column: 1 / -1; }
+        label { font-size: 0.75rem; color: var(--text2); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+        input, select, textarea { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.75rem; color: var(--text); font-size: 0.9rem; font-family: inherit; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+        textarea { resize: vertical; min-height: 60px; }
+        select { cursor: pointer; }
+
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn i { width: 15px; height: 15px; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { opacity: 0.9; transform: scale(1.02); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { opacity: 0.9; }
+        .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+        .btn-ghost:hover { border-color: var(--text2); color: var(--text); }
+        .btn-sm { padding: 0.35rem 0.6rem; font-size: 0.75rem; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-warn { background: #f59e0b; color: white; }
+        .btn-xs { padding: 0.25rem 0.5rem; font-size: 0.7rem; }
+
+        /* Theme grid */
+        .theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+        .theme-item { display: flex; flex-direction: column; gap: 0.35rem; }
+        .theme-item label { font-size: 0.7rem; }
+        .color-input { display: flex; align-items: center; gap: 0.5rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.6rem; }
+        .color-input input[type="color"] { width: 32px; height: 28px; border: none; background: none; cursor: pointer; padding: 0; border-radius: 4px; }
+        .color-input input[type="text"] { flex: 1; background: none; border: none; color: var(--text); font-size: 0.8rem; font-family: monospace; }
+
+        /* Presets */
+        .presets { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .preset-btn { width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--border); cursor: pointer; transition: all 0.2s; }
+        .preset-btn:hover { transform: scale(1.15); border-color: white; }
+
+        /* Add/edit form */
+        .add-form { background: var(--bg2); border: 2px dashed var(--border); border-radius: 12px; padding: 1rem; margin-top: 0.75rem; display: none; }
+        .add-form.open { display: block; }
+        .add-form-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+        .edit-form { background: var(--bg2); border: 1px solid var(--accent); border-radius: 12px; padding: 1rem; margin-top: 0.5rem; display: none; }
+        .edit-form.open { display: block; }
+
+        /* Tags */
+        .tags-input { display: flex; flex-wrap: wrap; gap: 0.35rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem; min-height: 38px; }
+        .tag { background: var(--accent); color: white; font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: 4px; display: flex; align-items: center; gap: 0.25rem; }
+        .tag .remove { cursor: pointer; opacity: 0.7; }
+        .tag .remove:hover { opacity: 1; }
+        .tag-input { background: none; border: none; color: var(--text); font-size: 0.85rem; flex: 1; min-width: 80px; outline: none; }
+
+        /* Embed preview */
+        .embed-preview { margin-top: 0.5rem; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+        .embed-preview iframe { width: 100%; aspect-ratio: 16/9; display: block; }
+        .embed-badge { display: inline-flex; align-items: center; gap: 0.3rem; background: var(--success); color: white; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 8px; font-weight: 600; }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--success); color: white; padding: 0.75rem 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.9rem; opacity: 0; transform: translateY(20px); transition: all 0.3s; z-index: 999; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.error { background: var(--danger); }
+
+        /* Logout */
+        .logout-btn { background: none; border: 1px solid var(--border); color: var(--text2); padding: 0.35rem 0.75rem; border-radius: 8px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+        .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
+    </style>
+</head>
+<body>
+    <!-- LOGIN SCREEN -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-box">
+            <h2>@omaquu <span>Admin</span></h2>
+            <p>Salasana vaaditaan</p>
+            <input type="password" class="login-input" id="loginPassword" placeholder="Salasana..." onkeydown="if(event.key==='Enter')doLogin()">
+            <div class="login-error" id="loginError">Väärä salasana</div>
+            <button class="login-btn" id="loginBtn" onclick="doLogin()">Kirjaudu sisään</button>
+        </div>
+    </div>
+
+    <!-- MAIN APP (hidden until auth'd) -->
+    <div class="app" id="appContent" style="display:none;">
+        <div class="header">
+            <h1>@omaquu <span>Admin</span></h1>
+            <div style="display:flex; align-items:center; gap:1rem;">
+                <button class="logout-btn" onclick="doLogout()">🔓 Ulos</button>
+                <a href="/" target="_blank" class="preview-link">
+                    <i data-lucide="external-link"></i> Esikatsele
+                </a>
+            </div>
+        </div>
+
+        <!-- PROFILE -->
+        <div class="section">
+            <div class="section-title"><i data-lucide="user"></i> Profiili</div>
+            <div class="card">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nimi</label>
+                        <input type="text" id="profile-name" placeholder="omaquu">
+                    </div>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="profile-username" placeholder="@omaquu">
+                    </div>
+                    <div class="form-group full">
+                        <label>Bio</label>
+                        <input type="text" id="profile-bio" placeholder="Someloukkaantuja">
+                    </div>
+                    <div class="form-group full">
+                        <label>Avatar URL</label>
+                        <input type="text" id="profile-avatar" placeholder="https://...">
+                    </div>
+                </div>
+                <div style="margin-top:0.75rem;"><button class="btn btn-primary btn-sm" onclick="saveProfile()"><i data-lucide="save"></i> Tallenna</button></div>
+            </div>
+        </div>
+
+        <!-- THEME -->
+        <div class="section">
+            <div class="section-title"><i data-lucide="palette"></i> Teema & Värit</div>
+            
+            <div style="margin-bottom: 0.75rem;">
+                <label style="font-size:0.8rem; color:var(--text2);">Presetit</label>
+                <div class="presets" id="presets"></div>
+            </div>
+
+            <div class="card">
+                <div class="theme-grid" id="themeGrid"></div>
+                <button class="btn btn-primary btn-sm" onclick="saveTheme()"><i data-lucide="save"></i> Tallenna teema</button>
+            </div>
+        </div>
+
+        <!-- LINKS -->
+        <div class="section">
+            <div class="section-title"><i data-lucide="link"></i> Linkit <button class="btn btn-ghost btn-sm" onclick="toggleAdd('link')"><i data-lucide="plus"></i> Lisää</button></div>
+            <div id="linksList"></div>
+            <div class="add-form" id="addLinkForm">
+                <div class="form-grid">
+                    <div class="form-group"><label>Title</label><input type="text" id="new-link-title" placeholder="YouTube"></div>
+                    <div class="form-group"><label>URL</label><input type="text" id="new-link-url" placeholder="https://..." oninput="previewEmbed('new-link-url','new-link-embed')">
+                        <div id="new-link-embed"></div>
+                    </div>
+                    <div class="form-group"><label>Icon</label>
+                        <select id="new-link-icon">
+                            <option value="youtube">YouTube</option><option value="twitch">Twitch</option>
+                            <option value="kick">Kick</option><option value="tiktok">TikTok</option>
+                            <option value="x">X / Twitter</option><option value="instagram">Instagram</option>
+                            <option value="snapchat">Snapchat</option><option value="discord">Discord</option>
+                            <option value="kofi">Ko-fi</option><option value="email">Email</option>
+                            <option value="custom">Muu / Embed</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Kategoria</label>
+                        <select id="new-link-cat">
+                            <option value="social">Sosiaalinen</option><option value="stream">Striimi</option>
+                            <option value="support">Tuki</option><option value="contact">Yhteys</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>LIVE</label><input type="checkbox" id="new-link-live"></div>
+                </div>
+                <div class="add-form-actions">
+                    <button class="btn btn-primary btn-sm" onclick="addLink()"><i data-lucide="plus"></i> Lisää linkki</button>
+                    <button class="btn btn-ghost btn-sm" onclick="toggleAdd('link')">Peruuta</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CODES -->
+        <div class="section">
+            <div class="section-title"><i data-lucide="ticket"></i> Alennuskoodit <button class="btn btn-ghost btn-sm" onclick="toggleAdd('code')"><i data-lucide="plus"></i> Lisää</button></div>
+            <div id="codesList"></div>
+            <div class="add-form" id="addCodeForm">
+                <div class="form-grid">
+                    <div class="form-group"><label>Kauppa</label><input type="text" id="new-code-store" placeholder="Biohackbalance.se"></div>
+                    <div class="form-group"><label>Koodi</label><input type="text" id="new-code-code" placeholder="OMAQUU10"></div>
+                    <div class="form-group"><label>Alennus</label><input type="text" id="new-code-discount" placeholder="10%"></div>
+                    <div class="form-group"><label>URL</label><input type="text" id="new-code-url" placeholder="https://..."></div>
+                    <div class="form-group full"><label>Kuvaus</label><input type="text" id="new-code-desc" placeholder="Superfood tuotteet"></div>
+                </div>
+                <div class="add-form-actions">
+                    <button class="btn btn-primary btn-sm" onclick="addCode()"><i data-lucide="plus"></i> Lisää koodi</button>
+                    <button class="btn btn-ghost btn-sm" onclick="toggleAdd('code')">Peruuta</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AFFILIATES -->
+        <div class="section">
+            <div class="section-title"><i data-lucide="shopping-bag"></i> Affiliatet / Shop <button class="btn btn-ghost btn-sm" onclick="toggleAdd('affiliate')"><i data-lucide="plus"></i> Lisää</button></div>
+            <div id="affiliatesList"></div>
+            <div class="add-form" id="addAffiliateForm">
+                <div class="form-grid">
+                    <div class="form-group"><label>Tuotenimi</label><input type="text" id="new-aff-title" placeholder="EPOMAKER HE65"></div>
+                    <div class="form-group"><label>Hinta</label><input type="text" id="new-aff-price" placeholder="$75.99"></div>
+                    <div class="form-group"><label>Affiliate URL</label><input type="text" id="new-aff-url" placeholder="https://..."></div>
+                    <div class="form-group"><label>Kuvan URL</label><input type="text" id="new-aff-image" placeholder="https://..."></div>
+                    <div class="form-group full"><label>Kuvaus</label><textarea id="new-aff-desc" placeholder="Tuotteen kuvaus..."></textarea></div>
+                    <div class="form-group full">
+                        <label>Ominaisuudet (tags, Enter = lisää)</label>
+                        <div class="tags-input" id="new-aff-tags">
+                            <input type="text" class="tag-input" placeholder="Kirjoita + Enter" onkeydown="handleTagKey(event, 'new-aff-tags')">
+                        </div>
+                    </div>
+                </div>
+                <div class="add-form-actions">
+                    <button class="btn btn-primary btn-sm" onclick="addAffiliate()"><i data-lucide="plus"></i> Lisää affiliate</button>
+                    <button class="btn btn-ghost btn-sm" onclick="toggleAdd('affiliate')">Peruuta</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    // ─── CONFIG ───
+    const API = '';
+    let isAuthenticated = false;
+
+    // ─── API with auth handling ───
+    async function api(method, path, body) {
+        const opts = { method, headers: { 'Content-Type': 'application/json' } };
+        if (body) opts.body = JSON.stringify(body);
+        const r = await fetch(API + path, opts);
+        if (r.status === 401) {
+            // Session expired
+            showLogin();
+            throw new Error('Unauthorized');
+        }
+        return r.json();
+    }
+
+    // ─── AUTH ───
+    async function checkAuth() {
+        try {
+            const data = await fetch(API + '/api/auth/status').then(r => r.json());
+            if (data.authenticated) {
+                isAuthenticated = true;
+                showApp();
+            } else {
+                showLogin();
+            }
+        } catch(e) {
+            showLogin();
+        }
+    }
+
+    async function doLogin() {
+        const pw = document.getElementById('loginPassword').value;
+        const errEl = document.getElementById('loginError');
+        const btn = document.getElementById('loginBtn');
+        btn.disabled = true;
+        btn.textContent = 'Kirjaudutaan...';
+        errEl.style.display = 'none';
+
+        try {
+            const r = await fetch(API + '/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: pw })
+            });
+            if (r.ok) {
+                isAuthenticated = true;
+                showApp();
+            } else {
+                errEl.style.display = 'block';
+                document.getElementById('loginPassword').value = '';
+                document.getElementById('loginPassword').focus();
+            }
+        } catch(e) {
+            errEl.textContent = 'Yhteysvirhe';
+            errEl.style.display = 'block';
+        }
+        btn.disabled = false;
+        btn.textContent = 'Kirjaudu sisään';
+    }
+
+    async function doLogout() {
+        await fetch(API + '/api/auth/logout', { method: 'POST' });
+        isAuthenticated = false;
+        showLogin();
+    }
+
+    function showLogin() {
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('appContent').style.display = 'none';
+    }
+
+    function showApp() {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('appContent').style.display = 'block';
+        loadAll();
+    }
+
+    // ─── TOAST ───
+    function toast(msg, error = false) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast' + (error ? ' error' : '');
+        setTimeout(() => t.classList.add('show'), 10);
+        setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    // ─── TOGGLE ADD FORMS ───
+    function toggleAdd(type) {
+        const forms = { link: 'addLinkForm', code: 'addCodeForm', affiliate: 'addAffiliateForm' };
+        const el = document.getElementById(forms[type]);
+        el.classList.toggle('open');
+    }
+
+    // ─── AUTO-DETECT EMBED FROM URL ───
+    function detectEmbedFromUrl(url) {
+        if (!url) return null;
+        url = url.trim();
+        // Kick
+        const kickMatch = url.match(/kick\.com\/([a-zA-Z0-9_]+)/);
+        if (kickMatch) return { type: 'kick', username: kickMatch[1], embedUrl: `https://kick.com/embed/${kickMatch[1]}` };
+        // Twitch
+        const twitchMatch = url.match(/twitch\.tv\/([a-zA-Z0-9_]+)/);
+        if (twitchMatch) return { type: 'twitch', username: twitchMatch[1], embedUrl: `https://player.twitch.tv/?channel=${twitchMatch[1]}&parent=${location.hostname}` };
+        // YouTube video
+        const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+        if (ytMatch) return { type: 'youtube', videoId: ytMatch[1], embedUrl: `https://www.youtube.com/embed/${ytMatch[1]}` };
+        // YouTube channel (@handle)
+        const ytChannelMatch = url.match(/youtube\.com\/@([a-zA-Z0-9_.-]+)/);
+        if (ytChannelMatch) return { type: 'youtube-channel', handle: ytChannelMatch[1] };
+        // YouTube live embed
+        const ytLiveMatch = url.match(/youtube\.com\/live\/([a-zA-Z0-9_-]+)/);
+        if (ytLiveMatch) return { type: 'youtube', videoId: ytLiveMatch[1], embedUrl: `https://www.youtube.com/embed/${ytLiveMatch[1]}` };
+        // TikTok video
+        const tiktokMatch = url.match(/tiktok\.com\/@[^\/]+\/video\/(\d+)/);
+        if (tiktokMatch) return { type: 'tiktok', videoId: tiktokMatch[1], embedUrl: `https://www.tiktok.com/embed/v2/${tiktokMatch[1]}` };
+        return null;
+    }
+
+    function previewEmbed(inputId, previewId) {
+        const url = document.getElementById(inputId).value;
+        const container = document.getElementById(previewId);
+        if (!container) return;
+        
+        const embed = detectEmbedFromUrl(url);
+        if (embed && embed.embedUrl) {
+            container.innerHTML = `
+                <div style="margin-top:0.5rem;">
+                    <span class="embed-badge">✨ Embed tunnistettu: ${embed.type}</span>
+                    <div class="embed-preview">
+                        <iframe src="${embed.embedUrl}" frameborder="0" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </div>
+            `;
+        } else if (embed) {
+            container.innerHTML = `<div style="margin-top:0.35rem;"><span class="embed-badge" style="background:var(--accent)">🔗 ${embed.type} linkki tunnistettu</span></div>`;
+        } else {
+            container.innerHTML = '';
+        }
+    }
+
+    // ─── PROFILE ───
+    async function loadProfile() {
+        const data = await api('GET', '/api/data');
+        document.getElementById('profile-name').value = data.profile.displayName || '';
+        document.getElementById('profile-username').value = data.profile.username || '';
+        document.getElementById('profile-bio').value = data.profile.bio || '';
+        document.getElementById('profile-avatar').value = data.profile.avatar || '';
+    }
+
+    async function saveProfile() {
+        await api('PUT', '/api/profile', {
+            displayName: document.getElementById('profile-name').value,
+            username: document.getElementById('profile-username').value,
+            bio: document.getElementById('profile-bio').value,
+            avatar: document.getElementById('profile-avatar').value,
+        });
+        toast('Profiili tallennettu!');
+    }
+
+    // ─── THEME ───
+    const THEME_FIELDS = [
+        { key: 'accent', label: 'Accent' },
+        { key: 'accentGlow', label: 'Glow', type: 'text' },
+        { key: 'bgPrimary', label: 'Tausta' },
+        { key: 'bgSecondary', label: 'Tausta 2' },
+        { key: 'bgCard', label: 'Kortti' },
+        { key: 'bgCardHover', label: 'Kortti Hover' },
+        { key: 'textPrimary', label: 'Teksti' },
+        { key: 'textSecondary', label: 'Teksti 2' },
+        { key: 'border', label: 'Reuna' },
+        { key: 'live', label: 'LIVE' },
+        { key: 'success', label: 'Onnistui' },
+    ];
+
+    let currentTheme = {};
+
+    async function loadTheme() {
+        currentTheme = await api('GET', '/api/theme');
+        const presets = await api('GET', '/api/theme/presets');
+        
+        // Presets
+        const presetsEl = document.getElementById('presets');
+        presetsEl.innerHTML = '';
+        for (const [name, theme] of Object.entries(presets)) {
+            const btn = document.createElement('button');
+            btn.className = 'preset-btn';
+            btn.style.background = theme.accent;
+            btn.title = name;
+            btn.onclick = () => applyPreset(theme);
+            presetsEl.appendChild(btn);
+        }
+
+        // Fields
+        const grid = document.getElementById('themeGrid');
+        grid.innerHTML = '';
+        THEME_FIELDS.forEach(f => {
+            const val = currentTheme[f.key] || '';
+            const isColor = f.type !== 'text' && val.startsWith('#');
+            grid.innerHTML += `
+                <div class="theme-item">
+                    <label>${f.label}</label>
+                    <div class="color-input">
+                        ${isColor ? `<input type="color" value="${val}" onchange="document.getElementById('theme-${f.key}').value=this.value; currentTheme['${f.key}']=this.value">` : ''}
+                        <input type="text" id="theme-${f.key}" value="${val}" onchange="currentTheme['${f.key}']=this.value;">
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function applyPreset(theme) {
+        Object.assign(currentTheme, theme);
+        THEME_FIELDS.forEach(f => {
+            const el = document.getElementById('theme-' + f.key);
+            if (el) el.value = currentTheme[f.key] || '';
+        });
+        toast('Preset lisätty – tallenna!');
+    }
+
+    async function saveTheme() {
+        THEME_FIELDS.forEach(f => {
+            const el = document.getElementById('theme-' + f.key);
+            if (el) currentTheme[f.key] = el.value;
+        });
+        await api('PUT', '/api/theme', currentTheme);
+        toast('Teema tallennettu!');
+    }
+
+    // ─── LINKS (with EDIT) ───
+    async function loadLinks() {
+        const links = await api('GET', '/api/links');
+        const container = document.getElementById('linksList');
+        container.innerHTML = '';
+        
+        links.forEach(l => {
+            const liveTag = l.live ? ' 🔴' : '';
+            const embedInfo = detectEmbedFromUrl(l.url);
+            const embedBadge = embedInfo ? `<span class="embed-badge" style="margin-left:0.5rem;font-size:0.65rem;">▶ ${embedInfo.type}</span>` : '';
+            
+            container.innerHTML += `
+                <div class="card" id="link-card-${l.id}">
+                    <div class="card-header">
+                        <span class="card-title">${l.title}${liveTag} <span style="color:var(--text3);font-size:0.75rem">${l.category || ''}</span>${embedBadge}</span>
+                        <div class="card-actions">
+                            <button class="btn btn-warn btn-xs" onclick="toggleEdit('link','${l.id}')"><i data-lucide="pencil"></i> Muokkaa</button>
+                            <button class="btn btn-danger btn-xs" onclick="deleteItem('links','${l.id}')"><i data-lucide="trash-2"></i></button>
+                        </div>
+                    </div>
+                    <div style="font-size:0.8rem;color:var(--text3);word-break:break-all;">${l.url}</div>
+                    <div class="edit-form" id="edit-link-${l.id}">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Title</label><input type="text" id="edit-${l.id}-title" value="${l.title || ''}"></div>
+                            <div class="form-group"><label>URL</label>
+                                <input type="text" id="edit-${l.id}-url" value="${l.url || ''}" oninput="previewEmbed('edit-${l.id}-url','edit-${l.id}-embed')">
+                                <div id="edit-${l.id}-embed"></div>
+                            </div>
+                            <div class="form-group"><label>Icon</label>
+                                <select id="edit-${l.id}-icon">
+                                    <option value="youtube" ${l.icon==='youtube'?'selected':''}>YouTube</option>
+                                    <option value="twitch" ${l.icon==='twitch'?'selected':''}>Twitch</option>
+                                    <option value="kick" ${l.icon==='kick'?'selected':''}>Kick</option>
+                                    <option value="tiktok" ${l.icon==='tiktok'?'selected':''}>TikTok</option>
+                                    <option value="x" ${l.icon==='x'?'selected':''}>X / Twitter</option>
+                                    <option value="instagram" ${l.icon==='instagram'?'selected':''}>Instagram</option>
+                                    <option value="snapchat" ${l.icon==='snapchat'?'selected':''}>Snapchat</option>
+                                    <option value="discord" ${l.icon==='discord'?'selected':''}>Discord</option>
+                                    <option value="kofi" ${l.icon==='kofi'?'selected':''}>Ko-fi</option>
+                                    <option value="email" ${l.icon==='email'?'selected':''}>Email</option>
+                                    <option value="custom" ${l.icon==='custom'?'selected':''}>Muu / Embed</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>Kategoria</label>
+                                <select id="edit-${l.id}-cat">
+                                    <option value="social" ${l.category==='social'?'selected':''}>Sosiaalinen</option>
+                                    <option value="stream" ${l.category==='stream'?'selected':''}>Striimi</option>
+                                    <option value="support" ${l.category==='support'?'selected':''}>Tuki</option>
+                                    <option value="contact" ${l.category==='contact'?'selected':''}>Yhteys</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>LIVE</label><input type="checkbox" id="edit-${l.id}-live" ${l.live?'checked':''}></div>
+                        </div>
+                        <div class="add-form-actions">
+                            <button class="btn btn-primary btn-sm" onclick="saveEditLink('${l.id}')"><i data-lucide="save"></i> Tallenna</button>
+                            <button class="btn btn-ghost btn-sm" onclick="toggleEdit('link','${l.id}')">Peruuta</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        lucide.createIcons();
+    }
+
+    function toggleEdit(type, id) {
+        const el = document.getElementById(`edit-${type}-${id}`);
+        if (el) el.classList.toggle('open');
+    }
+
+    async function saveEditLink(id) {
+        await api('PUT', `/api/links/${id}`, {
+            title: document.getElementById(`edit-${id}-title`).value,
+            url: document.getElementById(`edit-${id}-url`).value,
+            icon: document.getElementById(`edit-${id}-icon`).value,
+            category: document.getElementById(`edit-${id}-cat`).value,
+            live: document.getElementById(`edit-${id}-live`).checked,
+        });
+        toast('Linkki päivitetty!');
+        loadLinks();
+    }
+
+    async function addLink() {
+        const live = document.getElementById('new-link-live').checked;
+        const id = 'link-' + Date.now();
+        
+        // Auto-detect icon from URL
+        let icon = document.getElementById('new-link-icon').value;
+        const url = document.getElementById('new-link-url').value;
+        const detected = detectEmbedFromUrl(url);
+        if (detected && icon === 'custom') {
+            if (detected.type === 'kick') icon = 'kick';
+            else if (detected.type === 'twitch') icon = 'twitch';
+            else if (detected.type === 'youtube' || detected.type === 'youtube-channel') icon = 'youtube';
+            else if (detected.type === 'tiktok') icon = 'tiktok';
+        }
+        
+        await api('POST', '/api/links', {
+            id, 
+            title: document.getElementById('new-link-title').value,
+            url,
+            icon,
+            category: document.getElementById('new-link-cat').value,
+            live
+        });
+        toast('Linkki lisätty!');
+        toggleAdd('link');
+        loadLinks();
+    }
+
+    // ─── CODES (with EDIT) ───
+    async function loadCodes() {
+        const codes = await api('GET', '/api/codes');
+        const container = document.getElementById('codesList');
+        container.innerHTML = '';
+        
+        codes.forEach(c => {
+            container.innerHTML += `
+                <div class="card" id="code-card-${c.id}">
+                    <div class="card-header">
+                        <span class="card-title">${c.store} <span style="color:var(--accent);font-weight:700">${c.code}</span> <span style="color:var(--success);font-size:0.8rem">${c.discount} OFF</span></span>
+                        <div class="card-actions">
+                            <button class="btn btn-warn btn-xs" onclick="toggleEdit('code','${c.id}')"><i data-lucide="pencil"></i> Muokkaa</button>
+                            <button class="btn btn-danger btn-xs" onclick="deleteItem('codes','${c.id}')"><i data-lucide="trash-2"></i></button>
+                        </div>
+                    </div>
+                    <div style="font-size:0.8rem;color:var(--text2);">${c.description || ''}</div>
+                    <div class="edit-form" id="edit-code-${c.id}">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Kauppa</label><input type="text" id="edit-code-${c.id}-store" value="${c.store || ''}"></div>
+                            <div class="form-group"><label>Koodi</label><input type="text" id="edit-code-${c.id}-code" value="${c.code || ''}"></div>
+                            <div class="form-group"><label>Alennus</label><input type="text" id="edit-code-${c.id}-discount" value="${c.discount || ''}"></div>
+                            <div class="form-group"><label>URL</label><input type="text" id="edit-code-${c.id}-url" value="${c.url || ''}"></div>
+                            <div class="form-group full"><label>Kuvaus</label><input type="text" id="edit-code-${c.id}-desc" value="${c.description || ''}"></div>
+                            <div class="form-group"><label>Voimassa</label><input type="date" id="edit-code-${c.id}-expires" value="${c.expires || ''}"></div>
+                        </div>
+                        <div class="add-form-actions">
+                            <button class="btn btn-primary btn-sm" onclick="saveEditCode('${c.id}')"><i data-lucide="save"></i> Tallenna</button>
+                            <button class="btn btn-ghost btn-sm" onclick="toggleEdit('code','${c.id}')">Peruuta</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        lucide.createIcons();
+    }
+
+    async function saveEditCode(id) {
+        await api('PUT', `/api/codes/${id}`, {
+            store: document.getElementById(`edit-code-${id}-store`).value,
+            code: document.getElementById(`edit-code-${id}-code`).value,
+            discount: document.getElementById(`edit-code-${id}-discount`).value,
+            url: document.getElementById(`edit-code-${id}-url`).value,
+            description: document.getElementById(`edit-code-${id}-desc`).value,
+            expires: document.getElementById(`edit-code-${id}-expires`).value,
+        });
+        toast('Koodi päivitetty!');
+        loadCodes();
+    }
+
+    async function addCode() {
+        const id = 'code-' + Date.now();
+        await api('POST', '/api/codes', {
+            id,
+            store: document.getElementById('new-code-store').value,
+            code: document.getElementById('new-code-code').value,
+            discount: document.getElementById('new-code-discount').value,
+            url: document.getElementById('new-code-url').value,
+            description: document.getElementById('new-code-desc').value,
+            expires: ''
+        });
+        toast('Koodi lisätty!');
+        toggleAdd('code');
+        loadCodes();
+    }
+
+    // ─── AFFILIATES (with EDIT) ───
+    async function loadAffiliates() {
+        const affs = await api('GET', '/api/affiliates');
+        const container = document.getElementById('affiliatesList');
+        container.innerHTML = '';
+        
+        affs.forEach(a => {
+            const tags = (a.features || []).join(', ');
+            container.innerHTML += `
+                <div class="card" id="aff-card-${a.id}">
+                    <div class="card-header">
+                        <span class="card-title">${a.title} <span style="color:var(--accent)">${a.price || ''}</span></span>
+                        <div class="card-actions">
+                            <button class="btn btn-warn btn-xs" onclick="toggleEdit('affiliate','${a.id}')"><i data-lucide="pencil"></i> Muokkaa</button>
+                            <button class="btn btn-danger btn-xs" onclick="deleteItem('affiliates','${a.id}')"><i data-lucide="trash-2"></i></button>
+                        </div>
+                    </div>
+                    <div style="font-size:0.8rem;color:var(--text2);">${a.description || ''}</div>
+                    ${tags ? `<div style="margin-top:0.35rem;font-size:0.75rem;color:var(--text3);">#${(a.features||[]).join(' #')}</div>` : ''}
+                    <div class="edit-form" id="edit-affiliate-${a.id}">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Tuotenimi</label><input type="text" id="edit-aff-${a.id}-title" value="${a.title || ''}"></div>
+                            <div class="form-group"><label>Hinta</label><input type="text" id="edit-aff-${a.id}-price" value="${a.price || ''}"></div>
+                            <div class="form-group"><label>Affiliate URL</label><input type="text" id="edit-aff-${a.id}-url" value="${a.url || ''}"></div>
+                            <div class="form-group"><label>Kuvan URL</label><input type="text" id="edit-aff-${a.id}-image" value="${a.image || ''}"></div>
+                            <div class="form-group full"><label>Kuvaus</label><textarea id="edit-aff-${a.id}-desc">${a.description || ''}</textarea></div>
+                            <div class="form-group full">
+                                <label>Ominaisuudet (nykyiset: ${(a.features||[]).join(', ')})</label>
+                                <div class="tags-input" id="edit-aff-${a.id}-tags">
+                                    ${(a.features||[]).map(f => `<span class="tag" data-tag="${f}">#${f} <span class="remove" onclick="this.parentElement.remove()">×</span></span>`).join('')}
+                                    <input type="text" class="tag-input" placeholder="Kirjoita + Enter" onkeydown="handleTagKey(event, 'edit-aff-${a.id}-tags')">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="add-form-actions">
+                            <button class="btn btn-primary btn-sm" onclick="saveEditAffiliate('${a.id}')"><i data-lucide="save"></i> Tallenna</button>
+                            <button class="btn btn-ghost btn-sm" onclick="toggleEdit('affiliate','${a.id}')">Peruuta</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        lucide.createIcons();
+    }
+
+    async function saveEditAffiliate(id) {
+        const tagContainer = document.getElementById(`edit-aff-${id}-tags`);
+        const features = Array.from(tagContainer.querySelectorAll('.tag')).map(t => t.dataset.tag);
+        
+        await api('PUT', `/api/affiliates/${id}`, {
+            title: document.getElementById(`edit-aff-${id}-title`).value,
+            price: document.getElementById(`edit-aff-${id}-price`).value,
+            url: document.getElementById(`edit-aff-${id}-url`).value,
+            image: document.getElementById(`edit-aff-${id}-image`).value,
+            description: document.getElementById(`edit-aff-${id}-desc`).value,
+            features,
+            tags: features
+        });
+        toast('Affiliate päivitetty!');
+        loadAffiliates();
+    }
+
+    async function addAffiliate() {
+        const id = 'aff-' + Date.now();
+        const tagContainer = document.getElementById('new-aff-tags');
+        const features = Array.from(tagContainer.querySelectorAll('.tag')).map(t => t.dataset.tag);
+        
+        await api('POST', '/api/affiliates', {
+            id,
+            title: document.getElementById('new-aff-title').value,
+            price: document.getElementById('new-aff-price').value,
+            url: document.getElementById('new-aff-url').value,
+            image: document.getElementById('new-aff-image').value,
+            description: document.getElementById('new-aff-desc').value,
+            features,
+            tags: features
+        });
+        toast('Affiliate lisätty!');
+        toggleAdd('affiliate');
+        loadAffiliates();
+    }
+
+    // ─── TAGS INPUT ───
+    function handleTagKey(e, containerId) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const input = e.target;
+            const val = input.value.trim();
+            if (!val) return;
+            
+            const tag = document.createElement('span');
+            tag.className = 'tag';
+            tag.dataset.tag = val;
+            tag.innerHTML = `#${val} <span class="remove" onclick="this.parentElement.remove()">×</span>`;
+            
+            const container = document.getElementById(containerId);
+            container.insertBefore(tag, input);
+            input.value = '';
+        }
+    }
+
+    // ─── DELETE ───
+    async function deleteItem(collection, id) {
+        if (!confirm('Poistetaanko?')) return;
+        await api('DELETE', `/api/${collection}/${id}`);
+        toast('Poistettu!');
+        if (collection === 'links') loadLinks();
+        else if (collection === 'codes') loadCodes();
+        else if (collection === 'affiliates') loadAffiliates();
+    }
+
+    // ─── LOAD ALL ───
+    function loadAll() {
+        loadProfile();
+        loadTheme();
+        loadLinks();
+        loadCodes();
+        loadAffiliates();
+    }
+
+    // ─── INIT ───
+    document.addEventListener('DOMContentLoaded', () => {
+        checkAuth();
+    });
+    </script>
+</body>
+</html>

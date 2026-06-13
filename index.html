@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@omaquu Links</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app">
+        <!-- Kick Live Embed (shown only when live) -->
+        <div class="kick-embed" id="kickEmbed" style="display:none;">
+            <div class="kick-embed-header">
+                <span class="live-dot"></span>
+                <span class="kick-embed-title">LIVE @omaquu</span>
+            </div>
+            <iframe 
+                id="kickFrame"
+                src="" 
+                frameborder="0" 
+                allowfullscreen
+                loading="lazy">
+            </iframe>
+        </div>
+
+        <!-- Profile Section -->
+        <header class="profile">
+            <div class="avatar-container">
+                <img src="" alt="" class="avatar" id="avatar" style="display:none">
+                <div class="avatar-placeholder" id="avatarPlaceholder">O</div>
+            </div>
+            <h1 class="display-name" id="displayName"></h1>
+            <p class="bio" id="bio"></p>
+        </header>
+
+        <!-- Tab Navigation -->
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="links">
+                <i data-lucide="link"></i>
+                <span>Links</span>
+            </button>
+            <button class="tab-btn" data-tab="codes">
+                <i data-lucide="ticket"></i>
+                <span>Codes</span>
+            </button>
+            <button class="tab-btn" data-tab="affiliates">
+                <i data-lucide="shopping-bag"></i>
+                <span>Shop</span>
+            </button>
+        </nav>
+
+        <!-- Tab Content -->
+        <main class="content">
+            <!-- Links Tab -->
+            <section class="tab-content active" id="links">
+                <div class="links-list" id="linksList"></div>
+            </section>
+
+            <!-- Codes Tab -->
+            <section class="tab-content" id="codes">
+                <div class="codes-list" id="codesList"></div>
+            </section>
+
+            <!-- Affiliates / Shop Tab -->
+            <section class="tab-content" id="affiliates">
+                <!-- Search + Filter bar -->
+                <div class="shop-controls">
+                    <div class="search-bar">
+                        <i data-lucide="search" class="search-icon"></i>
+                        <input type="text" id="shopSearch" placeholder="Hae tuotteita..." oninput="filterShop()">
+                    </div>
+                    <div class="filter-tags" id="filterTags"></div>
+                </div>
+                <div class="affiliates-grid" id="affiliatesList"></div>
+                <div class="no-results" id="noResults" style="display:none;">
+                    <i data-lucide="search-x"></i>
+                    <p>Ei tuloksia</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>© 2025 @omaquu</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+{
+    "profile": {
+        "username": "@omaquu",
+        "displayName": "omaquu",
+        "bio": "Someloukkaantuja",
+        "avatar": "https://i.imgur.com/omaquu-avatar.png"
+    },
+    "links": [
+        {
+            "id": "youtube",
+            "title": "YouTube",
+            "url": "https://www.youtube.com/@omaquu",
+            "icon": "youtube",
+            "category": "social",
+            "live": false
+        },
+        {
+            "id": "twitch",
+            "title": "Twitch.tv",
+            "url": "https://www.twitch.tv/omaquu",
+            "icon": "twitch",
+            "category": "stream",
+            "live": true
+        },
+        {
+            "id": "kick",
+            "title": "kick.com",
+            "url": "https://kick.com/omaquu",
+            "icon": "kick",
+            "category": "stream",
+            "live": true
+        },
+        {
+            "id": "tiktok",
+            "title": "TikTok",
+            "url": "https://www.tiktok.com/@omaquu",
+            "icon": "tiktok",
+            "category": "social",
+            "live": false
+        },
+        {
+            "id": "x",
+            "title": "X",
+            "url": "https://x.com/omaquu",
+            "icon": "x",
+            "category": "social",
+            "live": false
+        },
+        {
+            "id": "instagram",
+            "title": "Instagram",
+            "url": "https://www.instagram.com/omaquu",
+            "icon": "instagram",
+            "category": "social",
+            "live": false
+        },
+        {
+            "id": "snapchat",
+            "title": "Snapchat",
+            "url": "https://www.snapchat.com/add/omaquu",
+            "icon": "snapchat",
+            "category": "social",
+            "live": false
+        },
+        {
+            "id": "discord",
+            "title": "Discord",
+            "url": "https://discord.gg/A2MtYsd",
+            "icon": "discord",
+            "category": "social",
+            "live": false
+        },
+        {
+            "id": "kofi",
+            "title": "ko-fi (lahjoitukset)",
+            "url": "https://ko-fi.com/omaquu",
+            "icon": "kofi",
+            "category": "support",
+            "live": false
+        },
+        {
+            "id": "email",
+            "title": "Email",
+            "url": "mailto:omaquu@example.com",
+            "icon": "email",
+            "category": "contact",
+            "live": false
+        }
+    ],
+    "codes": [
+        {
+            "id": "biohackbalance",
+            "store": "Biohackbalance.se",
+            "code": "OMAQUU10",
+            "discount": "10%",
+            "description": "Superfood ja biohackaustuotteet",
+            "url": "https://biohackbalance.se",
+            "expires": "2025-12-31"
+        }
+    ],
+    "affiliates": [
+        {
+            "id": "epomaker-he65",
+            "title": "EPOMAKER HE65 Mec",
+            "description": "65% Mekaaninen näppäimistö, näytöllä",
+            "price": "$75.99",
+            "image": "https://cdn.shopify.com/s/files/1/0280/3931/5529/files/6_39119f8d-255b-404c-9b5e-688a11e9d56b.jpg?v=1747212239",
+            "url": "https://epomaker.com/products/epomaker-he65-mec?_pos=1&_psq=he65+mec&_ss=e&_v=1.0&sca_ref=8947059.0C4M5Nm0LS",
+            "features": [
+                "5-layer sound dampening",
+                "TFT-näyttö",
+                "Knob-ohjain",
+                "Hot-swap"
+            ],
+            "tags": [
+                "tech",
+                "keyboard",
+                "new"
+            ]
+        }
+    ]
+}
