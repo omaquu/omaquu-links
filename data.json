@@ -142,5 +142,6 @@
                 "new"
             ]
         }
-    ]
+    ],
+    "streamAlwaysVisible": true
 }
