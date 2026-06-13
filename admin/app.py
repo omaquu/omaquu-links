@@ -2,15 +2,19 @@
 omaquu-linksite Admin Dashboard
 Flask backend for managing data.json + theme settings
 
-Auth: Simple password protection via query param or cookie.
-      Set ADMIN_PASSWORD env var (default: changeme)
+Auth: Simple password protection via cookie.
+      Set ADMIN_PASSWORD in admin/.env (or env var).
 """
 import json
 import os
 import hashlib
-import secrets
 from functools import wraps
-from flask import Flask, request, jsonify, send_from_directory, render_template, make_response
+from dotenv import load_dotenv
+from flask import Flask, request, jsonify, render_template, make_response
+
+# Load .env from admin/ directory (local secrets, NOT in git)
+_dotenv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
+load_dotenv(_dotenv_path)
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 DATA_FILE = os.path.join(os.path.dirname(__file__), '..', 'data.json')
