@@ -155,7 +155,7 @@
 </div>
 
 <!-- MAIN APP -->
-<div class="container" id="app" class="hidden">
+<div class="container hidden" id="app">
 
   <header>
     <div>
@@ -598,25 +598,61 @@ async function deleteItem(type, id) {
   if (type==='links') loadLinks(); else if (type==='codes') loadCodes(); else loadAffiliates();
 }
 
-// Drag & drop reorder
+// Drag & drop reorder — Links
 let dragSrc = null;
 function dragStart(e) { dragSrc = e.currentTarget; e.dataTransfer.effectAllowed='move'; }
 function dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect='move'; }
 async function dropItem(e) {
   e.preventDefault();
   if (!dragSrc) return;
-  const list = [...document.querySelectorAll('.item')];
+  const list = [...document.querySelectorAll('#linksList .item')];
   const from = list.indexOf(dragSrc);
   const to   = list.indexOf(e.currentTarget);
   if (from===to) return;
-  // Get current order
   const items = await api('/links');
   const item = items.splice(from, 1)[0];
   items.splice(to, 0, item);
-  // Send new sort_order
   const payload = items.map((it, i) => ({id: it.id, sort_order: i}));
   await api('/links/reorder', {method:'POST', body: JSON.stringify(payload)});
   loadLinks();
+}
+
+// Drag & drop reorder — Codes
+let dragSrcCode = null;
+function dragStartCode(e) { dragSrcCode = e.currentTarget; e.dataTransfer.effectAllowed='move'; }
+async function dropCode(e) {
+  e.preventDefault();
+  if (!dragSrcCode) return;
+  const list = [...document.querySelectorAll('#codesList .item')];
+  const from = list.indexOf(dragSrcCode);
+  const to   = list.indexOf(e.currentTarget);
+  if (from===to) return;
+  const items = await api('/codes');
+  items.sort((a,b)=>(a.sort_order||999)-(b.sort_order||999));
+  const item = items.splice(from, 1)[0];
+  items.splice(to, 0, item);
+  const payload = items.map((it, i) => ({id: it.id, sort_order: i}));
+  await api('/codes/reorder', {method:'POST', body: JSON.stringify(payload)});
+  loadCodes();
+}
+
+// Drag & drop reorder — Affiliates
+let dragSrcAff = null;
+function dragStartAff(e) { dragSrcAff = e.currentTarget; e.dataTransfer.effectAllowed='move'; }
+async function dropAff(e) {
+  e.preventDefault();
+  if (!dragSrcAff) return;
+  const list = [...document.querySelectorAll('#affList .item')];
+  const from = list.indexOf(dragSrcAff);
+  const to   = list.indexOf(e.currentTarget);
+  if (from===to) return;
+  const items = await api('/affiliates');
+  items.sort((a,b)=>b.sort_order-a.sort_order);
+  const item = items.splice(from, 1)[0];
+  items.splice(to, 0, item);
+  const payload = items.map((it, i) => ({id: it.id, sort_order: i}));
+  await api('/affiliates/reorder', {method:'POST', body: JSON.stringify(payload)});
+  loadAffiliates();
 }
 
 // ════════════════════════════════════════════════════════
@@ -663,7 +699,9 @@ async function loadCodes() {
     const matchTags = codeFilterTags.size === 0 || (l.tags||'').split(',').map(t=>t.trim().toLowerCase()).some(t=>codeFilterTags.has(t));
     return matchSearch && matchTags;
   }).map(l=>`
-    <div class="item">
+    <div class="item" draggable="true" data-id="${l.id}"
+         ondragstart="dragStartCode(event)" ondragover="dragOver(event)" ondrop="dropCode(event)">
+      <span class="sort-handle" title="Järjestä">☰</span>
       <span class="type-badge">CODE</span>
       <span class="title">${esc(l.title)}</span>
       <code style="font-size:0.75rem;color:#aaa;flex:2;word-break:break-all">${esc(l.code||'')}</code>
@@ -712,7 +750,7 @@ async function addAffiliate() {
     tags: document.getElementById('afTags').value,
     color: document.getElementById('afColor').value,
     youtubeId: document.getElementById('afYoutube').value,
-    sort_order: 999,
+    sort_order: 0,
   };
   if (!p.title || !p.url) return;
   if (window._editAffId) {
@@ -731,7 +769,7 @@ async function loadAffiliates() {
   const [list, tags] = await Promise.all([
     api('/affiliates'), api('/affiliates/tags')
   ]);
-  list.sort((a,b)=>a.sort_order-b.sort_order);
+  list.sort((a,b)=>b.sort_order-a.sort_order);
   // tags
   document.getElementById('affTags').innerHTML =
     tags.length
@@ -739,7 +777,9 @@ async function loadAffiliates() {
       : '<span class="subtitle">Ei tageja</span>';
   // rows with filter — show all tags on row
   document.getElementById('affList').innerHTML = list.map(l=>`
-    <div class="item">
+    <div class="item" draggable="true" data-id="${l.id}"
+         ondragstart="dragStartAff(event)" ondragover="dragOver(event)" ondrop="dropAff(event)">
+      <span class="sort-handle" title="Järjestä">☰</span>
       <span class="type-badge">AF</span>
       <span class="title">${esc(l.title||l.url)}</span>
       <span class="url">${esc(l.url).slice(0,50)}</span>
@@ -858,7 +898,7 @@ async function saveTheme() {
 async function loadPresets() {
   const presets = await api('/theme/presets');
   const grid = document.getElementById('presetGrid');
-  const names = {orange:'Orange', purple:'Purple', matrix:'Matrix', stars:'Stars', midnight:'Midnight'};
+  const names = {orange:'Orange', purple:'Purple', matrix:'Matrix', stars:'Stars', midnight:'Midnight', neon:'Neon', fire:'Fire', ocean:'Ocean', aurora:'Aurora', galaxy:'Galaxy'};
   grid.innerHTML = Object.entries(presets).map(([k,v]) => `
     <div class="preset" onclick="applyPreset('${k}')" title="${names[k]||k}">
       <span style="display:inline-block;width:14px;height:14px;background:${v.accent};border-radius:50%;vertical-align:middle"></span>

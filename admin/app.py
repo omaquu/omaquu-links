@@ -152,6 +152,22 @@ def links_reorder():
         if l['id'] in m: l['sort_order'] = m[l['id']]
     write_data(d); _git_push("Reorder links"); return jsonify({"status":"ok"})
 
+@app.route('/api/codes/reorder', methods=['POST'])
+@auth_required
+def codes_reorder():
+    d = read_data(); m = {i['id']:i['sort_order'] for i in request.json}
+    for c in d.get('codes',[]):
+        if c['id'] in m: c['sort_order'] = m[c['id']]
+    write_data(d); _git_push("Reorder codes"); return jsonify({"status":"ok"})
+
+@app.route('/api/affiliates/reorder', methods=['POST'])
+@auth_required
+def affiliates_reorder():
+    d = read_data(); m = {i['id']:i['sort_order'] for i in request.json}
+    for a in d.get('affiliates',[]):
+        if a['id'] in m: a['sort_order'] = m[a['id']]
+    write_data(d); _git_push("Reorder affiliates"); return jsonify({"status":"ok"})
+
 # ─── Codes ─────────────────────────────────────────────────────────────────
 @app.route('/api/codes', methods=['GET','POST'])
 @auth_required
@@ -193,7 +209,7 @@ def affiliates():
     d = read_data()
     if request.method == 'GET':
         return jsonify(sorted(d.get('affiliates',[]), key=lambda x: x.get('sort_order',999)))
-    n = request.json; n.setdefault('sort_order',999); n.setdefault('color',''); n.setdefault('tags','')
+    n = request.json; n.setdefault('sort_order',0); n.setdefault('color',''); n.setdefault('tags','')
     n.setdefault('youtubeId',''); n.setdefault('id',__import__('uuid').uuid4().hex[:8])
     d.setdefault('affiliates',[]).append(n); write_data(d); _git_push("Add affiliate")
     return jsonify({"status":"ok","id":n['id']})
