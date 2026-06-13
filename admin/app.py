@@ -16,18 +16,16 @@ DATA_FILE     = os.path.join(BASE_DIR, '..', 'data.json')
 THEME_FILE    = os.path.join(BASE_DIR, '..', 'theme.json')
 REPO_DIR      = os.path.join(BASE_DIR, '..')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'changeme')
+ADMIN_HASH     = os.environ.get('ADMIN_HASH', '')
 COOKIE_NAME    = 'omaquu_admin_s'
 COOKIE_MAX_AGE = 60 * 60 * 24
-# Pre-compute bcrypt hash at startup for fast verification
-_ADMIN_HASH    = bcrypt.hashpw(ADMIN_PASSWORD.encode(), bcrypt.gensalt()).decode()
 
 # ─── Auth ─────────────────────────────────────────────────────────────────────
 def get_cookie_pw(): return request.cookies.get(COOKIE_NAME, '')
 def is_authenticated():
     stored = get_cookie_pw()
-    if not stored: return False
-    try: return bcrypt.checkpw(ADMIN_PASSWORD.encode(), stored.encode())
-    except: return False
+    if not stored or not ADMIN_HASH: return False
+    return stored == ADMIN_HASH  # both are the same bcrypt hash
 
 def auth_required(f):
     @wraps(f)
@@ -99,12 +97,12 @@ def login():
     if not pw: return jsonify({'error':'Salasana puuttuu'}), 400
     try:
         # Verify against the pre-computed hash
-        ok = bcrypt.checkpw(pw.encode(), _ADMIN_HASH.encode())
+        ok = bcrypt.checkpw(pw.encode(), ADMIN_HASH.encode())
     except: ok = False
     if ok:
         r = make_response(jsonify({'status':'ok'}))
         # Store hash in cookie (stateless) with Strict samesite
-        r.set_cookie(COOKIE_NAME, _ADMIN_HASH, max_age=COOKIE_MAX_AGE, httponly=True, samesite='Strict')
+        r.set_cookie(COOKIE_NAME, ADMIN_HASH, max_age=COOKIE_MAX_AGE, httponly=True, samesite='Strict')
         return r
     return jsonify({'error':'Väärä salasana'}), 401
 
