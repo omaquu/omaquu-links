@@ -102,13 +102,6 @@
             "color": "#ff0000",
             "sort_order": 1,
             "id": "a727beb6"
-        },
-        {
-            "title": "GitHub test",
-            "url": "https://github.com",
-            "color": "#00ff00",
-            "sort_order": 0,
-            "id": "4b2991f1"
         }
     ],
     "codes": [

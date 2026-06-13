@@ -1,6 +1,9 @@
 // ============================================
-// omaquu Link Site - Main Script v2
-// Combines: Links + Codes + Shop (old hashtag/search) + Kick Live
+// omaquu Link Site - Main Script v3
+// Features: Links + Codes + Shop + Kick Live
+//   + Quick Links + Per-link colors + Stream Always
+//   + Background animations (particles/matrix/stars)
+//   + Tag counts in shop
 // ============================================
 
 // Icon mappings
@@ -16,22 +19,23 @@ const CATEGORY_LABELS = {
 };
 
 let siteData = {
-    profile: { username: '@omaquu', displayName: 'omaquu', bio: '', avatar: '' },
-    links: [], codes: [], affiliates: []
+    profile: { username: '@omaquu', displayName: 'omaquu', bio: '', avatar: '', quickLinks: [] },
+    links: [], codes: [], affiliates: [], streamAlwaysVisible: false
 };
 
+let currentTheme = {};
 let activeFilters = new Set();
-let searchActive = false;
+let animFrame = null;
 
-// ─── LOAD DATA ───
+// ─── LOAD DATA ────────────────────────────────────────────────────────────
 async function loadData() {
     try {
         // Load theme first
         try {
             const themeRes = await fetch('theme.json');
             if (themeRes.ok) {
-                const theme = await themeRes.json();
-                applyTheme(theme);
+                currentTheme = await themeRes.json();
+                applyTheme(currentTheme);
             }
         } catch(e) {}
 
@@ -47,28 +51,163 @@ async function loadData() {
     }
 }
 
-// ─── THEME ───
+// ─── THEME ────────────────────────────────────────────────────────────────
 function applyTheme(theme) {
     const root = document.documentElement;
-    Object.entries(theme).forEach(([key, val]) => {
-        const varMap = {
-            accent: '--accent', accentGlow: '--accent-glow',
-            bgPrimary: '--bg-primary', bgSecondary: '--bg-secondary',
-            bgCard: '--bg-card', bgCardHover: '--bg-card-hover',
-            textPrimary: '--text-primary', textSecondary: '--text-secondary',
-            textMuted: '--text-muted', border: '--border',
-            live: '--live', success: '--success'
-        };
-        if (varMap[key]) root.style.setProperty(varMap[key], val);
+    const varMap = {
+        accent: '--accent', accentGlow: '--accent-glow',
+        bgPrimary: '--bg-primary', bgSecondary: '--bg-secondary',
+        bgCard: '--bg-card', bgCardHover: '--bg-card-hover',
+        textPrimary: '--text-primary', textSecondary: '--text-secondary',
+        textMuted: '--text-muted', border: '--border',
+        live: '--live', success: '--success'
+    };
+    Object.entries(varMap).forEach(([key, cssVar]) => {
+        if (theme[key]) root.style.setProperty(cssVar, theme[key]);
     });
+
+    // Background image
+    const bgOverlay = document.getElementById('bgImageOverlay');
+    if (bgOverlay) {
+        if (theme.bgImage) {
+            bgOverlay.style.backgroundImage = `url(${theme.bgImage})`;
+            bgOverlay.style.display = 'block';
+        } else {
+            bgOverlay.style.display = 'none';
+        }
+    }
+
+    // Background animation
+    if (theme.bgAnimation) {
+        startBgAnimation(theme.bgAnimation, theme.animationColor || theme.accent || '#ff6b35');
+    } else if (animFrame) {
+        cancelAnimationFrame(animFrame);
+        animFrame = null;
+        const canvas = document.getElementById('bgCanvas');
+        if (canvas) { const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height); }
+    }
 }
 
-// ─── EMBED AUTO-DETECT ───
+// ─── BACKGROUND ANIMATIONS ─────────────────────────────────────────────────
+function startBgAnimation(type, color) {
+    const canvas = document.getElementById('bgCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    if (animFrame) cancelAnimationFrame(animFrame);
+
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+
+    if (type === 'particles') {
+        // Floating particles
+        const particles = Array.from({length: 60}, () => ({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5,
+            size: Math.random() * 3 + 1,
+            alpha: Math.random() * 0.5 + 0.1
+        }));
+
+        function drawParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, Math.max(0.5, p.size), 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${r},${g},${b},${p.alpha})`;
+                ctx.fill();
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+            });
+            // Draw lines between close particles
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(${r},${g},${b},${0.1 * (1 - dist / 120)})`;
+                        ctx.stroke();
+                    }
+                }
+            }
+            animFrame = requestAnimationFrame(drawParticles);
+        }
+        drawParticles();
+
+    } else if (type === 'matrix') {
+        // Matrix rain
+        const fontSize = 14;
+        const cols = Math.floor(canvas.width / fontSize);
+        const drops = Array(cols).fill(1);
+        const chars = 'OMAQUU0123456789ABCDEF@#$%&';
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(10,10,15,0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = `rgba(${r},${g},${b},0.8)`;
+            ctx.font = fontSize + 'px monospace';
+
+            drops.forEach((y, i) => {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, y * fontSize);
+                if (y * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            });
+            animFrame = requestAnimationFrame(drawMatrix);
+        }
+        drawMatrix();
+
+    } else if (type === 'stars') {
+        // Twinkling stars
+        const stars = Array.from({length: 150}, () => ({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 2 + 0.5,
+            speed: Math.random() * 0.02 + 0.005,
+            phase: Math.random() * Math.PI * 2
+        }));
+        let time = 0;
+
+        function drawStars() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            time += 0.016;
+            stars.forEach(s => {
+                const alpha = 0.3 + 0.5 * Math.sin(time * s.speed * 60 + s.phase);
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, Math.max(0.3, s.size), 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+                ctx.fill();
+            });
+            animFrame = requestAnimationFrame(drawStars);
+        }
+        drawStars();
+    }
+}
+
+// ─── EMBED AUTO-DETECT ────────────────────────────────────────────────────
 function detectEmbedFromUrl(url) {
     if (!url) return null;
     url = url.trim();
     const kickMatch = url.match(/kick\.com\/([a-zA-Z0-9_]+)/);
-    if (kickMatch) return { type: 'kick', username: kickMatch[1], embedUrl: `https://kick.com/embed/${kickMatch[1]}` };
+    if (kickMatch) return { type: 'kick', username: kickMatch[1], embedUrl: `https://player.kick.com/${kickMatch[1]}` };
     const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/);
     if (ytMatch) return { type: 'youtube', videoId: ytMatch[1], embedUrl: `https://www.youtube.com/embed/${ytMatch[1]}` };
     const twitchMatch = url.match(/twitch\.tv\/([a-zA-Z0-9_]+)/);
@@ -78,18 +217,18 @@ function detectEmbedFromUrl(url) {
     return null;
 }
 
-// ─── RENDER ALL ───
+// ─── RENDER ALL ───────────────────────────────────────────────────────────
 function renderAll() {
     renderProfile();
+    renderQuickLinks();
     renderLinks();
     renderCodes();
     renderAffiliates();
     renderFilterTags();
-    renderAutoEmbeds();
     lucide.createIcons();
 }
 
-// ─── PROFILE ───
+// ─── PROFILE ──────────────────────────────────────────────────────────────
 function renderProfile() {
     const { profile } = siteData;
     document.getElementById('displayName').textContent = profile.displayName;
@@ -108,23 +247,45 @@ function renderProfile() {
     }
 }
 
-// ─── LINKS ───
+// ─── QUICK LINKS ──────────────────────────────────────────────────────────
+function renderQuickLinks() {
+    const container = document.getElementById('quickLinks');
+    const links = siteData.profile?.quickLinks || [];
+    if (!links.length) { container.innerHTML = ''; return; }
+
+    container.innerHTML = links.map(q => `
+        <a href="${escHtml(q.url)}" class="quick-link" target="_blank" rel="noopener noreferrer" title="${escHtml(q.name || q.url)}">
+            <span class="quick-link-emoji">${q.emoji || '🔗'}</span>
+            ${q.name ? `<span class="quick-link-name">${escHtml(q.name)}</span>` : ''}
+        </a>
+    `).join('');
+}
+
+// ─── LINKS ────────────────────────────────────────────────────────────────
 function renderLinks() {
     const container = document.getElementById('linksList');
     container.innerHTML = '';
     
-    siteData.links.forEach(link => {
+    // Sort by sort_order
+    const sorted = [...(siteData.links || [])].sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999));
+
+    sorted.forEach(link => {
         const iconName = ICONS[link.icon] || 'link';
         const catLabel = CATEGORY_LABELS[link.category] || '';
         const cardClass = `link-card${link.category === 'stream' ? ' stream' : link.category === 'support' ? ' support' : ''}`;
         const liveBadge = link.live ? '<span class="live-badge">LIVE</span>' : '';
         const catText = catLabel ? `<div class="link-category">${catLabel}</div>` : '';
         
+        // Per-link color accent
+        const colorStyle = link.color ? `style="--link-accent:${link.color}"` : '';
+        
         container.innerHTML += `
-            <a href="${link.url}" class="${cardClass}" target="_blank" rel="noopener noreferrer">
-                <div class="link-icon"><i data-lucide="${iconName}"></i></div>
+            <a href="${escHtml(link.url)}" class="${cardClass}" ${colorStyle} target="_blank" rel="noopener noreferrer">
+                <div class="link-icon"${link.color ? ` style="background:${link.color}22;color:${link.color}"` : ''}>
+                    <i data-lucide="${iconName}"></i>
+                </div>
                 <div class="link-info">
-                    <div class="link-title">${link.title}${liveBadge}</div>
+                    <div class="link-title">${escHtml(link.title)}${liveBadge}</div>
                     ${catText}
                 </div>
                 <div class="link-arrow"><i data-lucide="chevron-right"></i></div>
@@ -133,26 +294,29 @@ function renderLinks() {
     });
 }
 
-// ─── CODES ───
+// ─── CODES ────────────────────────────────────────────────────────────────
 function renderCodes() {
     const container = document.getElementById('codesList');
     container.innerHTML = '';
     
-    siteData.codes.forEach(code => {
+    const sorted = [...(siteData.codes || [])].sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999));
+
+    sorted.forEach(code => {
+        const colorAccent = code.color ? `style="--code-accent:${code.color}"` : '';
         container.innerHTML += `
-            <div class="code-card">
+            <div class="code-card" ${colorAccent}>
                 <div class="code-header">
-                    <span class="code-store">${code.store}</span>
-                    <span class="code-discount">${code.discount} OFF</span>
+                    <span class="code-store">${escHtml(code.store || code.title)}</span>
+                    <span class="code-discount"${code.color ? ` style="background:linear-gradient(135deg,${code.color},${code.color}cc)"` : ''}>${escHtml(code.discount || '')} OFF</span>
                 </div>
-                <div class="code-description">${code.description || ''}</div>
+                <div class="code-description">${escHtml(code.description || '')}</div>
                 <div class="code-box">
-                    <span class="code-value">${code.code}</span>
-                    <button class="copy-btn" onclick="copyCode('${code.code}', this)">
+                    <span class="code-value"${code.color ? ` style="color:${code.color}"` : ''}>${escHtml(code.code)}</span>
+                    <button class="copy-btn" onclick="copyCode('${escHtml(code.code)}', this)"${code.color ? ` style="background:${code.color}"` : ''}>
                         <i data-lucide="copy"></i> Copy
                     </button>
                 </div>
-                ${code.url ? `<a href="${code.url}" target="_blank" rel="noopener noreferrer" class="code-link">
+                ${code.url ? `<a href="${escHtml(code.url)}" target="_blank" rel="noopener noreferrer" class="code-link">
                     <i data-lucide="external-link"></i> Siirry kauppaan
                 </a>` : ''}
             </div>
@@ -173,32 +337,35 @@ function copyCode(code, btn) {
     });
 }
 
-// ─── SHOP / AFFILIATES (vanhan hashtag + haku) ───
+// ─── SHOP / AFFILIATES ────────────────────────────────────────────────────
 function renderAffiliates() {
     const container = document.getElementById('affiliatesList');
     container.innerHTML = '';
     
-    siteData.affiliates.forEach(aff => {
-        const features = aff.features || aff.tags || [];
+    const sorted = [...(siteData.affiliates || [])].sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999));
+
+    sorted.forEach(aff => {
+        const features = normalizeTags(aff.features || aff.tags);
         const tagsHtml = features.map(f => 
-            `<span class="affiliate-tag" data-tag="${f}" onclick="filterByTag('${f}')">#${f}</span>`
+            `<span class="affiliate-tag" data-tag="${escHtml(f)}" onclick="filterByTag('${escHtml(f)}')">#${escHtml(f)}</span>`
         ).join('');
         
         const card = document.createElement('div');
         card.className = 'affiliate-card';
+        if (aff.color) card.style.setProperty('--link-accent', aff.color);
         card.dataset.tags = JSON.stringify(features);
         card.innerHTML = `
             ${aff.image ? `
             <div class="affiliate-image-wrap">
-                <img src="${aff.image}" alt="${aff.title}" class="affiliate-image" loading="lazy">
+                <img src="${escHtml(aff.image)}" alt="${escHtml(aff.title)}" class="affiliate-image" loading="lazy">
             </div>
             ` : ''}
             <div class="affiliate-content">
-                <div class="affiliate-title">${aff.title}</div>
-                <div class="affiliate-desc">${aff.description || ''}</div>
-                <div class="affiliate-price">${aff.price || ''}</div>
+                <div class="affiliate-title">${escHtml(aff.title)}</div>
+                <div class="affiliate-desc">${escHtml(aff.description || '')}</div>
+                <div class="affiliate-price">${escHtml(aff.price || '')}</div>
                 <div class="affiliate-features">${tagsHtml}</div>
-                <a href="${aff.url}" target="_blank" rel="noopener noreferrer" class="affiliate-cta" onclick="event.stopPropagation()">
+                <a href="${escHtml(aff.url)}" target="_blank" rel="noopener noreferrer" class="affiliate-cta"${aff.color ? ` style="background:${aff.color}"` : ''} onclick="event.stopPropagation()">
                     <i data-lucide="shopping-cart"></i> Osta nyt
                 </a>
             </div>
@@ -209,28 +376,38 @@ function renderAffiliates() {
     });
 }
 
-// ─── FILTER TAGS (vanha haku + hashtag) ───
+function normalizeTags(raw) {
+    if (Array.isArray(raw)) return raw.map(t => String(t).trim().toLowerCase()).filter(Boolean);
+    if (typeof raw === 'string') return raw.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+    return [];
+}
+
+// ─── FILTER TAGS (with counts) ────────────────────────────────────────────
 function renderFilterTags() {
     const container = document.getElementById('filterTags');
-    const allTags = new Set();
+    const tagCounts = {};
+    
     siteData.affiliates.forEach(aff => {
-        (aff.features || aff.tags || []).forEach(t => allTags.add(t));
+        normalizeTags(aff.features || aff.tags).forEach(t => {
+            tagCounts[t] = (tagCounts[t] || 0) + 1;
+        });
     });
     
-    if (allTags.size === 0) { container.innerHTML = ''; return; }
+    const allTags = Object.keys(tagCounts);
+    if (allTags.length === 0) { container.innerHTML = ''; return; }
     
+    // Sort by count descending
+    allTags.sort((a, b) => tagCounts[b] - tagCounts[a]);
+
     container.innerHTML = `<span class="filter-tag ${activeFilters.size === 0 ? 'active' : ''}" onclick="clearFilters()">Kaikki</span>` +
-        Array.from(allTags).map(tag => 
-            `<span class="filter-tag ${activeFilters.has(tag) ? 'active' : ''}" data-tag="${tag}" onclick="toggleFilter('${tag}')">#${tag}</span>`
+        allTags.map(tag => 
+            `<span class="filter-tag ${activeFilters.has(tag) ? 'active' : ''}" data-tag="${escHtml(tag)}" onclick="toggleFilter('${escHtml(tag)}')">#${escHtml(tag)} <span class="tag-count">(${tagCounts[tag]})</span></span>`
         ).join('');
 }
 
 function toggleFilter(tag) {
-    if (activeFilters.has(tag)) {
-        activeFilters.delete(tag);
-    } else {
-        activeFilters.add(tag);
-    }
+    if (activeFilters.has(tag)) activeFilters.delete(tag);
+    else activeFilters.add(tag);
     filterShop();
     renderFilterTags();
 }
@@ -244,7 +421,6 @@ function clearFilters() {
 function filterByTag(tag) {
     activeFilters.clear();
     activeFilters.add(tag);
-    // Switch to shop tab
     document.querySelector('[data-tab="affiliates"]').click();
     filterShop();
     renderFilterTags();
@@ -265,9 +441,7 @@ function filterShop() {
         
         if (matchesSearch && matchesFilters) {
             card.classList.remove('hidden-card', 'faded', 'highlighted');
-            if (searchVal || activeFilters.size > 0) {
-                card.classList.add('highlighted');
-            }
+            if (searchVal || activeFilters.size > 0) card.classList.add('highlighted');
             visibleCount++;
         } else {
             card.classList.add('hidden-card');
@@ -279,46 +453,71 @@ function filterShop() {
     if (noResults) noResults.style.display = visibleCount === 0 ? 'block' : 'none';
 }
 
-// ─── KICK LIVE EMBED ───
-// This now uses the auto-detect system. The kick embed at the top of the page
-// only shows when the streamer is actually LIVE (checked via API).
+// ─── KICK LIVE EMBED ──────────────────────────────────────────────────────
 async function checkKickLive() {
     const embed = document.getElementById('kickEmbed');
     const frame = document.getElementById('kickFrame');
+    const liveDot = document.getElementById('liveDot');
+    const embedTitle = document.getElementById('embedTitle');
     
-    // Find kick link and get username from data
+    // If streamAlwaysVisible, show embed always (even if offline)
+    const alwaysShow = siteData.streamAlwaysVisible === true;
+    
+    // Find kick link
     const kickLink = siteData.links?.find(l => l.icon === 'kick' || l.url?.includes('kick.com/'));
-    if (!kickLink) return;
+    if (!kickLink) {
+        if (alwaysShow) {
+            // No kick link found but always-show is on — try hardcoded omaquu
+            setupEmbed(embed, frame, liveDot, embedTitle, 'omaquu', alwaysShow);
+        } else {
+            embed.style.display = 'none';
+        }
+        return;
+    }
     
     const detected = detectEmbedFromUrl(kickLink.url);
-    if (!detected || detected.type !== 'kick') return;
+    if (!detected || detected.type !== 'kick') {
+        embed.style.display = alwaysShow ? 'block' : 'none';
+        return;
+    }
+    
+    setupEmbed(embed, frame, liveDot, embedTitle, detected.username, alwaysShow);
+}
+
+async function setupEmbed(embed, frame, liveDot, embedTitle, username, alwaysShow) {
+    frame.src = `https://player.kick.com/${username}`;
     
     try {
-        // Check Kick API for live status
-        const res = await fetch(`https://kick.com/api/v2/channels/${detected.username}`);
+        const res = await fetch(`https://kick.com/api/v2/channels/${username}`);
         if (res.ok) {
             const data = await res.json();
             if (data.data?.livestream) {
+                // Actually live!
                 embed.style.display = 'block';
-                frame.src = detected.embedUrl;
+                liveDot.style.background = 'var(--live)';
+                liveDot.classList.add('live-dot');
+                embedTitle.textContent = `LIVE @${username}`;
+                embed.style.borderColor = 'var(--live)';
+                embed.style.boxShadow = '0 0 20px rgba(239,68,68,0.2)';
                 return;
             }
         }
     } catch(e) {}
     
-    // Don't show embed if not live
-    embed.style.display = 'none';
+    // Not live
+    if (alwaysShow) {
+        embed.style.display = 'block';
+        liveDot.style.background = 'var(--text-muted)';
+        liveDot.classList.remove('live-dot');
+        embedTitle.textContent = `@${username} · Offline`;
+        embed.style.borderColor = 'var(--border)';
+        embed.style.boxShadow = 'none';
+    } else {
+        embed.style.display = 'none';
+    }
 }
 
-// ─── AUTO EMBEDS (from links with embed-able URLs) ───
-function renderAutoEmbeds() {
-    // Look for links that have auto-detected embeds and render inline embeds
-    // Currently this is used by the kick live check — future: could render 
-    // YouTube video embeds etc. under specific links
-    checkKickLive();
-}
-
-// ─── TAB SWITCHING ───
+// ─── TAB SWITCHING ───────────────────────────────────────────────────────
 function initTabs() {
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
@@ -336,7 +535,7 @@ function initTabs() {
     });
 }
 
-// ─── SEARCH BAR ENTER ───
+// ─── SEARCH BAR ───────────────────────────────────────────────────────────
 function initSearch() {
     const searchInput = document.getElementById('shopSearch');
     if (searchInput) {
@@ -349,28 +548,35 @@ function initSearch() {
     }
 }
 
-// ─── INIT ───
+// ─── UTILS ────────────────────────────────────────────────────────────────
+function escHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/"/g,'"');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initSearch();
     loadData();
 });
 
-// ─── FALLBACK ───
+// ─── FALLBACK ─────────────────────────────────────────────────────────────
 function getFallbackData() {
     return {
-        profile: { username: '@omaquu', displayName: 'omaquu', bio: 'Someloukkaantuja', avatar: '' },
+        profile: { username: '@omaquu', displayName: 'omaquu', bio: 'Someloukkaantuja', avatar: '', quickLinks: [] },
         links: [
-            { id: 'youtube', title: 'YouTube', url: 'https://www.youtube.com/@omaquu', icon: 'youtube', category: 'social', live: false },
-            { id: 'kick', title: 'kick.com', url: 'https://kick.com/omaquu', icon: 'kick', category: 'stream', live: true },
-            { id: 'twitch', title: 'Twitch.tv', url: 'https://www.twitch.tv/omaquu', icon: 'twitch', category: 'stream', live: false },
-            { id: 'tiktok', title: 'TikTok', url: 'https://www.tiktok.com/@omaquu', icon: 'tiktok', category: 'social', live: false },
+            { id: 'youtube', title: 'YouTube', url: 'https://www.youtube.com/@omaquu', icon: 'youtube', category: 'social', live: false, sort_order: 1 },
+            { id: 'kick', title: 'kick.com', url: 'https://kick.com/omaquu', icon: 'kick', category: 'stream', live: true, sort_order: 2 },
+            { id: 'twitch', title: 'Twitch.tv', url: 'https://www.twitch.tv/omaquu', icon: 'twitch', category: 'stream', live: false, sort_order: 3 },
+            { id: 'tiktok', title: 'TikTok', url: 'https://www.tiktok.com/@omaquu', icon: 'tiktok', category: 'social', live: false, sort_order: 4 },
         ],
         codes: [
-            { id: 'biohackbalance', store: 'Biohackbalance.se', code: 'OMAQUU10', discount: '10%', description: 'Superfood tuotteet', url: 'https://biohackbalance.se' }
+            { id: 'biohackbalance', store: 'Biohackbalance.se', code: 'OMAQUU10', discount: '10%', description: 'Superfood tuotteet', url: 'https://biohackbalance.se', sort_order: 0 }
         ],
         affiliates: [
-            { id: 'epomaker', title: 'EPOMAKER HE65 Mec', description: '65% Mechanical Keyboard', price: '$75.99', image: 'https://cdn.shopify.com/s/files/1/0280/3931/5529/files/6_39119f8d-255b-404c-9b5e-688a11e9d56b.jpg?v=1747212239', url: 'https://epomaker.com/products/epomaker-he65-mec?_pos=1&_psq=he65+mec&_ss=e&_v=1.0&sca_ref=8947059.0C4M5Nm0LS', features: ['tech', 'keyboard', 'new'], tags: ['tech', 'keyboard', 'new'] }
-        ]
+            { id: 'epomaker', title: 'EPOMAKER HE65 Mec', description: '65% Mechanical Keyboard', price: '$75.99', image: 'https://cdn.shopify.com/s/files/1/0280/3931/5529/files/6_39119f8d-255b-404c-9b5e-688a11e9d56b.jpg?v=1747212239', url: 'https://epomaker.com/products/epomaker-he65-mec', features: ['tech', 'keyboard', 'new'], tags: ['tech', 'keyboard', 'new'], sort_order: 0 }
+        ],
+        streamAlwaysVisible: false
     };
 }
