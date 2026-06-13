@@ -13,7 +13,7 @@
             "icon": "youtube",
             "category": "social",
             "live": false,
-            "sort_order": 2
+            "sort_order": 1
         },
         {
             "id": "twitch",
@@ -22,7 +22,7 @@
             "icon": "twitch",
             "category": "stream",
             "live": true,
-            "sort_order": 3
+            "sort_order": 2
         },
         {
             "id": "kick",
@@ -40,7 +40,7 @@
             "icon": "tiktok",
             "category": "social",
             "live": false,
-            "sort_order": 5
+            "sort_order": 3
         },
         {
             "id": "x",
@@ -49,7 +49,7 @@
             "icon": "x",
             "category": "social",
             "live": false,
-            "sort_order": 6
+            "sort_order": 5
         },
         {
             "id": "instagram",
@@ -58,7 +58,7 @@
             "icon": "instagram",
             "category": "social",
             "live": false,
-            "sort_order": 7
+            "sort_order": 6
         },
         {
             "id": "snapchat",
@@ -67,7 +67,7 @@
             "icon": "snapchat",
             "category": "social",
             "live": false,
-            "sort_order": 8
+            "sort_order": 7
         },
         {
             "id": "discord",
@@ -76,7 +76,7 @@
             "icon": "discord",
             "category": "social",
             "live": false,
-            "sort_order": 9
+            "sort_order": 8
         },
         {
             "id": "kofi",
@@ -85,7 +85,7 @@
             "icon": "kofi",
             "category": "support",
             "live": false,
-            "sort_order": 10
+            "sort_order": 9
         },
         {
             "id": "email",
@@ -94,13 +94,13 @@
             "icon": "email",
             "category": "contact",
             "live": false,
-            "sort_order": 11
+            "sort_order": 10
         },
         {
             "title": "Testi",
             "url": "https://example.com",
             "color": "#ff0000",
-            "sort_order": 1,
+            "sort_order": 0,
             "id": "a727beb6"
         }
     ],
