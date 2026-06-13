@@ -86,15 +86,6 @@
             "category": "support",
             "live": false,
             "sort_order": 9
-        },
-        {
-            "id": "email",
-            "title": "Email",
-            "url": "mailto:omaquu@example.com",
-            "icon": "email",
-            "category": "contact",
-            "live": false,
-            "sort_order": 10
         }
     ],
     "codes": [
