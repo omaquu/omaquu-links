@@ -2,5 +2,4 @@ venv/
 __pycache__/
 *.pyc
 admin/venv/
-admin/app.py  # Don't upload the main app.py — contains env vars
 .env
