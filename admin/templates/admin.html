@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>omaquu-links · Admin</title>
 <link rel="icon" href="data:,">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -799,9 +802,8 @@ async function addAffiliate() {
   loadAffiliates();
 }
 async function loadAffiliates() {
-  const [list, tags] = await Promise.all([
-    api('/affiliates'), api('/affiliates/tags')
-  ]);
+  let list=[]; let tags=[];
+  try { list = await api('/affiliates'); tags = await api('/affiliates/tags'); } catch(e) { console.warn('affiliates load error:', e); }
   list.sort((a,b)=>a.sort_order-b.sort_order);
   // tags
   document.getElementById('affTags').innerHTML =
@@ -929,7 +931,7 @@ async function saveTheme() {
   await api('/theme', {method:'PUT', body: JSON.stringify(themePayload())});
 }
 async function loadPresets() {
-  const presets = await api('/theme/presets');
+  const presets = await api('/theme/presets').catch(()=>({}));
   const grid = document.getElementById('presetGrid');
   const names = {orange:'🍊 Orange', purple:'💜 Purple', matrix:'🟢 Matrix', stars:'⭐ Stars', midnight:'🌙 Midnight', neon:'⚡ Neon', fire:'🔥 Fire', ocean:'🌊 Ocean', aurora:'🌌 Aurora', galaxy:'🌌 Galaxy'};
   const simpleNames = {orange:'Orange', purple:'Purple', matrix:'Matrix', stars:'Stars', midnight:'Midnight', neon:'Neon', fire:'Fire', ocean:'Ocean', aurora:'Aurora', galaxy:'Galaxy'};
@@ -940,7 +942,7 @@ async function loadPresets() {
     </div>`).join('');
 }
 async function applyPreset(name) {
-  const presets = await api('/theme/presets');
+  const presets = await api('/theme/presets').catch(()=>({}));
   const p = presets[name];
   if (!p) return;
   const t = themePayload();
@@ -983,6 +985,25 @@ function addTagToInput(inputId, tag) {
 function esc(s) {
   if (!s) return '';
   return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// ── Embed auto-detection ─────────────────────────────────
+function detectEmbedFromUrl() {
+  const url = document.getElementById('lnkUrl').value.trim();
+  if (!url) return;
+  const embedEl = document.getElementById('lnkEmbed');
+  const valEl = document.getElementById('lnkEmbedVal');
+  const previewEl = document.getElementById('embedPrev');
+  previewEl.classList.add('hidden'); previewEl.innerHTML = '';
+  const km = url.match(/kick\.com\/([a-zA-Z0-9_]+)/);
+  if (km) { embedEl.value='kick'; valEl.value=km[1]; previewEmbed(); return; }
+  const tm = url.match(/twitch\.tv\/([a-zA-Z0-9_]+)/);
+  if (tm) { embedEl.value='twitch'; valEl.value=tm[1]; previewEmbed(); return; }
+  const ym = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if (ym) { embedEl.value='youtube'; valEl.value=ym[1]; previewEmbed(); return; }
+  const ttm = url.match(/tiktok\.com\/.*\/video\/(\d+)/);
+  if (ttm) { embedEl.value='tiktok'; valEl.value=ttm[1]; previewEmbed(); return; }
+  if (url.startsWith('http')) { embedEl.value='iframe'; valEl.value=url; previewEmbed(); }
+}
 }
 async function updateItem(type, id, patch) {
   await api('/'+type+'/'+id, {method:'PUT', body: JSON.stringify(patch)});
