@@ -219,7 +219,7 @@
       <h2>＋ Lisää linkki</h2>
       <div class="row">
         <div class="col"><label>Otsikko</label><input id="lnkTitle"></div>
-        <div class="col-2"><label>URL</label><input id="lnkUrl" placeholder="https://..."></div>
+        <div class="col-2"><label>URL</label><input id="lnkUrl" placeholder="https://..." oninput="detectEmbedFromUrl()"></div>
         <div class="col"><label>Embed</label>
           <select id="lnkEmbed" onchange="previewEmbed()">
             <option value="">— Ei embed —</option>
