@@ -208,7 +208,11 @@
         <div class="col"><label>Embed arvo (username / video-id / URL)</label><input id="lnkEmbedVal"></div>
         <div class="col"><label>Väri</label><input type="color" id="lnkColor" class="color-input" value="#ff6b35"></div>
       </div>
-      <button class="primary" onclick="addLink()">Tallenna linkki</button>
+      <div class="row">
+        <div class="col"><label>Tagit (comma)</label><input id="lnkTags" placeholder="tech, kauppa"></div>
+      </div>
+      <button class="primary" onclick="addLink()" id="lnkSaveBtn">Tallenna linkki</button>
+      <button class="small danger hidden" id="lnkCancelBtn" onclick="cancelEditLink()" style="margin-left:8px">Peruuta</button>
       <div id="embedPrev" class="embed-preview hidden"></div>
     </div>
     <div class="card">
@@ -236,7 +240,8 @@
       <div class="row">
         <div class="col"><label>Tagit (comma)</label><input id="cdTags" placeholder="tech, kauppa"></div>
       </div>
-      <button class="primary" onclick="addCode()">Tallenna koodi</button>
+      <button class="primary" onclick="addCode()" id="cdSaveBtn">Tallenna koodi</button>
+      <button class="small danger hidden" id="cdCancelBtn" onclick="cancelEditCode()" style="margin-left:8px">Peruuta</button>
     </div>
     <div class="card">
       <h2>Koodit</h2>
@@ -272,7 +277,8 @@
         <div class="col"><label>Tagit (comma)</label><input id="afTags" placeholder="tech, kauppa"></div>
         <div class="col"><label>YouTube video ID</label><input id="afYoutube" placeholder="dQw4w9WgXcQ"></div>
       </div>
-      <button class="primary" onclick="addAffiliate()">Tallenna affiliate</button>
+      <button class="primary" onclick="addAffiliate()" id="afSaveBtn">Tallenna affiliate</button>
+      <button class="small danger hidden" id="afCancelBtn" onclick="cancelEditAffiliate()" style="margin-left:8px">Peruuta</button>
     </div>
 
     <div class="card">
@@ -523,17 +529,34 @@ function renderQuickLinks(list) {
 async function addLink() {
   const p = {
     title: document.getElementById('lnkTitle').value,
-    url:   document.getElementById('lnkUrl').value,
+    url: document.getElementById('lnkUrl').value,
     embedType: document.getElementById('lnkEmbed').value,
     embedValue: document.getElementById('lnkEmbedVal').value,
     color: document.getElementById('lnkColor').value,
+    tags: document.getElementById('lnkTags').value,
     sort_order: 999,
   };
   if (!p.title || !p.url) return;
-  await api('/links', {method:'POST', body: JSON.stringify(p)});
-  ['lnkTitle','lnkUrl','lnkEmbedVal'].forEach(i=>document.getElementById(i).value='');
+  if (window._editId) {
+    await api('/links/' + window._editId, {method:'PUT', body: JSON.stringify(p)});
+    delete window._editId;
+  } else {
+    await api('/links', {method:'POST', body: JSON.stringify(p)});
+  }
+  ['lnkTitle','lnkUrl','lnkEmbedVal','lnkTags'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('lnkColor').value = '#ff6b35';
   document.getElementById('embedPrev').classList.add('hidden');
+  document.getElementById('lnkSaveBtn').textContent = 'Tallenna linkki';
+  document.getElementById('lnkCancelBtn').classList.add('hidden');
   loadLinks();
+}
+function cancelEditLink() {
+  ['lnkTitle','lnkUrl','lnkEmbedVal','lnkTags'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('lnkColor').value = '#ff6b35';
+  document.getElementById('embedPrev').classList.add('hidden');
+  document.getElementById('lnkSaveBtn').textContent = 'Tallenna linkki';
+  document.getElementById('lnkCancelBtn').classList.add('hidden');
+  delete window._editId;
 }
 async function loadLinks() {
   const list = await api('/links');
@@ -541,17 +564,33 @@ async function loadLinks() {
   document.getElementById('linksList').innerHTML = list.map((l,i) => `
     <div class="item" draggable="true" data-id="${l.id}"
          ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="dropItem(event)">
-      <span class="sort-handle" title="Järjestä">☰</span>
-      <span class="type-badge">LINK</span>
-      <span class="title">${esc(l.title||l.url)}</span>
-      <input type="color" value="${l.color||'#ff6b35'}"
-             style="width:32px;flex:none"
-             onchange="updateItem('links','${l.id}',{color:this.value})"
-             title="Väri">
-      <span class="actions">
-        <button class="small danger" onclick="deleteItem('links','${l.id}')">Poista</button>
-      </span>
-    </div>`).join('');
+ <span class="sort-handle" title="Järjestä">☰</span>
+ <span class="type-badge">LINK</span>
+ <span class="title">${esc(l.title||l.url)}</span>
+ <input type="color" value="${l.color||'#ff6b35'}"
+ style="width:32px;flex:none"
+ onchange="updateItem('links','${l.id}',{color:this.value})"
+ title="Väri">
+ <span class="actions">
+ <button class="small" onclick="editLink('${l.id}')">✏️ Muokkaa</button>
+ <button class="small danger" onclick="deleteItem('links','${l.id}')">Poista</button>
+ </span>
+</div>`).join('');
+}
+async function editLink(id) {
+ const list = await api('/links');
+ const item = list.find(l => l.id === id);
+ if (!item) return;
+ document.getElementById('lnkTitle').value = item.title || '';
+ document.getElementById('lnkUrl').value = item.url || '';
+ document.getElementById('lnkEmbed').value = item.embedType || '';
+ document.getElementById('lnkEmbedVal').value = item.embedValue || '';
+ document.getElementById('lnkColor').value = item.color || '#ff6b35';
+ document.getElementById('lnkTags').value = item.tags || '';
+ document.getElementById('lnkSaveBtn').textContent = '✏️ Päivitä linkki';
+ document.getElementById('lnkCancelBtn').classList.remove('hidden');
+ window.scrollTo(0, 0);
+ window._editId = id;
 }
 async function deleteItem(type, id) {
   if (!confirm('Poista?')) return;
@@ -587,7 +626,7 @@ let codeFilterTags = new Set();
 async function addCode() {
   const p = {
     title: document.getElementById('cdTitle').value,
-    code:  document.getElementById('cdCode').value,
+    code: document.getElementById('cdCode').value,
     discount: document.getElementById('cdDiscount').value,
     description: document.getElementById('cdDescription').value,
     url: document.getElementById('cdUrl').value,
@@ -596,8 +635,16 @@ async function addCode() {
     sort_order: 999,
   };
   if (!p.title || !p.code) return;
-  await api('/codes', {method:'POST', body: JSON.stringify(p)});
+  if (window._editCodeId) {
+    await api('/codes/' + window._editCodeId, {method:'PUT', body: JSON.stringify(p)});
+    delete window._editCodeId;
+  } else {
+    await api('/codes', {method:'POST', body: JSON.stringify(p)});
+  }
   ['cdTitle','cdCode','cdDiscount','cdDescription','cdUrl','cdTags'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('cdColor').value = '#ff6b35';
+  document.getElementById('cdSaveBtn').textContent = 'Tallenna koodi';
+  document.getElementById('cdCancelBtn').classList.add('hidden');
   loadCodes();
 }
 async function loadCodes() {
@@ -624,9 +671,33 @@ async function loadCodes() {
       <input type="color" value="${l.color||'#ff6b35'}" style="width:32px;flex:none"
              onchange="updateItem('codes','${l.id}',{color:this.value})" title="Väri">
       <span class="actions">
+        <button class="small" onclick="editCode('${l.id}')">✏️</button>
         <button class="small danger" onclick="deleteItem('codes','${l.id}')">Poista</button>
       </span>
     </div>`).join('');
+}
+async function editCode(id) {
+  const list = await api('/codes');
+  const item = list.find(c => c.id === id);
+  if (!item) return;
+  document.getElementById('cdTitle').value = item.title || '';
+  document.getElementById('cdCode').value = item.code || '';
+  document.getElementById('cdDiscount').value = item.discount || '';
+  document.getElementById('cdDescription').value = item.description || '';
+  document.getElementById('cdUrl').value = item.url || '';
+  document.getElementById('cdColor').value = item.color || '#ff6b35';
+  document.getElementById('cdTags').value = item.tags || '';
+  document.getElementById('cdSaveBtn').textContent = '✏️ Päivitä koodi';
+  document.getElementById('cdCancelBtn').classList.remove('hidden');
+  window.scrollTo(0, 0);
+  window._editCodeId = id;
+}
+function cancelEditCode() {
+  ['cdTitle','cdCode','cdDiscount','cdDescription','cdUrl','cdTags'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('cdColor').value = '#ff6b35';
+  document.getElementById('cdSaveBtn').textContent = 'Tallenna koodi';
+  document.getElementById('cdCancelBtn').classList.add('hidden');
+  delete window._editCodeId;
 }
 function filterCodes() { loadCodes(); }
 
@@ -636,16 +707,24 @@ function filterCodes() { loadCodes(); }
 async function addAffiliate() {
   const p = {
     title: document.getElementById('afTitle').value,
-    url:   document.getElementById('afUrl').value,
+    url: document.getElementById('afUrl').value,
     image: document.getElementById('afImage').value,
-    tags:  document.getElementById('afTags').value,
+    tags: document.getElementById('afTags').value,
     color: document.getElementById('afColor').value,
     youtubeId: document.getElementById('afYoutube').value,
     sort_order: 999,
   };
   if (!p.title || !p.url) return;
-  await api('/affiliates', {method:'POST', body: JSON.stringify(p)});
+  if (window._editAffId) {
+    await api('/affiliates/' + window._editAffId, {method:'PUT', body: JSON.stringify(p)});
+    delete window._editAffId;
+  } else {
+    await api('/affiliates', {method:'POST', body: JSON.stringify(p)});
+  }
   ['afTitle','afUrl','afImage','afTags','afYoutube'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('afColor').value = '#ff6b35';
+  document.getElementById('afSaveBtn').textContent = 'Tallenna affiliate';
+  document.getElementById('afCancelBtn').classList.add('hidden');
   loadAffiliates();
 }
 async function loadAffiliates() {
@@ -669,9 +748,32 @@ async function loadAffiliates() {
       <input type="color" value="${l.color||'#ff6b35'}" style="width:32px;flex:none"
              onchange="updateItem('affiliates','${l.id}',{color:this.value})" title="Väri">
       <span class="actions">
+        <button class="small" onclick="editAffiliate('${l.id}')">✏️</button>
         <button class="small danger" onclick="deleteItem('affiliates','${l.id}')">Poista</button>
       </span>
     </div>`).join('');
+}
+async function editAffiliate(id) {
+  const list = await api('/affiliates');
+  const item = list.find(a => a.id === id);
+  if (!item) return;
+  document.getElementById('afTitle').value = item.title || '';
+  document.getElementById('afUrl').value = item.url || '';
+  document.getElementById('afImage').value = item.image || '';
+  document.getElementById('afTags').value = item.tags || '';
+  document.getElementById('afColor').value = item.color || '#ff6b35';
+  document.getElementById('afYoutube').value = item.youtubeId || '';
+  document.getElementById('afSaveBtn').textContent = '✏️ Päivitä affiliate';
+  document.getElementById('afCancelBtn').classList.remove('hidden');
+  window.scrollTo(0, 0);
+  window._editAffId = id;
+}
+function cancelEditAffiliate() {
+  ['afTitle','afUrl','afImage','afTags','afYoutube'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('afColor').value = '#ff6b35';
+  document.getElementById('afSaveBtn').textContent = 'Tallenna affiliate';
+  document.getElementById('afCancelBtn').classList.add('hidden');
+  delete window._editAffId;
 }
 
 function toggleParser() {
