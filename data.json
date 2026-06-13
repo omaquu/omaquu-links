@@ -13,7 +13,7 @@
             "icon": "youtube",
             "category": "social",
             "live": false,
-            "sort_order": 1
+            "sort_order": 0
         },
         {
             "id": "twitch",
@@ -22,7 +22,7 @@
             "icon": "twitch",
             "category": "stream",
             "live": true,
-            "sort_order": 0
+            "sort_order": 1
         },
         {
             "id": "kick",
