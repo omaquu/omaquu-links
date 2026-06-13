@@ -143,15 +143,6 @@
             "color": "#ff6b35",
             "sort_order": 999,
             "id": "8776e1a0"
-        },
-        {
-            "title": "Test",
-            "url": "https://test.com",
-            "tags": "test",
-            "youtubeId": "abc123",
-            "sort_order": 999,
-            "color": "",
-            "id": "245df01b"
         }
     ],
     "streamAlwaysVisible": false
