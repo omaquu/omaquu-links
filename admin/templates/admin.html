@@ -906,7 +906,7 @@ function hex(name, val) {
   if (el && val !== undefined) el.value = val;
   return el ? el.value : '';
 }
-async async function loadTheme() {
+async function loadTheme() {
   const t = await api('/theme');
   hex('tAccent',  t.accent);
   hex('tBg1',     t.bgPrimary);
