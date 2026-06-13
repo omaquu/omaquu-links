@@ -1,10 +1,11 @@
 """ omaquu-linksite Admin Dashboard v4
 Flask backend: GitHub auto-push + stream type + codes tags + youtube affiliate + 10 presets
 """
-import json, os, re, hashlib, subprocess
+import json, os, re, subprocess
 from functools import wraps
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify, render_template, make_response
+import bcrypt
 
 _dotenv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
 load_dotenv(_dotenv_path)
@@ -17,11 +18,16 @@ REPO_DIR      = os.path.join(BASE_DIR, '..')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'changeme')
 COOKIE_NAME    = 'omaquu_admin_s'
 COOKIE_MAX_AGE = 60 * 60 * 24
+# Pre-compute bcrypt hash at startup for fast verification
+_ADMIN_HASH    = bcrypt.hashpw(ADMIN_PASSWORD.encode(), bcrypt.gensalt()).decode()
 
 # ─── Auth ─────────────────────────────────────────────────────────────────────
-def hash_pw(pw): return hashlib.sha256(pw.encode()).hexdigest()
 def get_cookie_pw(): return request.cookies.get(COOKIE_NAME, '')
-def is_authenticated(): return get_cookie_pw() == hash_pw(ADMIN_PASSWORD)
+def is_authenticated():
+    stored = get_cookie_pw()
+    if not stored: return False
+    try: return bcrypt.checkpw(stored.encode(), _ADMIN_HASH.encode())
+    except: return False
 
 def auth_required(f):
     @wraps(f)
@@ -89,9 +95,16 @@ def index(): return render_template('admin.html')
 @app.route('/api/auth/login', methods=['POST'])
 def login():
     d = request.get_json(silent=True) or {}
-    if d.get('password','') == ADMIN_PASSWORD:
+    pw = d.get('password','')
+    if not pw: return jsonify({'error':'Salasana puuttuu'}), 400
+    try:
+        # Verify against the pre-computed hash
+        ok = bcrypt.checkpw(pw.encode(), _ADMIN_HASH.encode())
+    except: ok = False
+    if ok:
         r = make_response(jsonify({'status':'ok'}))
-        r.set_cookie(COOKIE_NAME, hash_pw(ADMIN_PASSWORD), max_age=COOKIE_MAX_AGE, httponly=True)
+        # Store hash in cookie (stateless) with Strict samesite
+        r.set_cookie(COOKIE_NAME, _ADMIN_HASH, max_age=COOKIE_MAX_AGE, httponly=True, samesite='Strict')
         return r
     return jsonify({'error':'Väärä salasana'}), 401
 
