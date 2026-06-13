@@ -206,12 +206,12 @@
 
   <!-- TABS -->
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('links')">Linkit</div>
-    <div class="tab" onclick="switchTab('codes')">Koodit</div>
-    <div class="tab" onclick="switchTab('affiliates')">Affiliates</div>
-    <div class="tab" onclick="switchTab('profile')">Profiili</div>
-    <div class="tab" onclick="switchTab('stream')">Stream</div>
-    <div class="tab" onclick="switchTab('theme')">Teema</div>
+    <div class="tab active" onclick="switchTab('links')" data-tab="links">Linkit</div>
+    <div class="tab" onclick="switchTab('codes')" data-tab="codes">Koodit</div>
+    <div class="tab" onclick="switchTab('affiliates')" data-tab="affiliates">Affiliates</div>
+    <div class="tab" onclick="switchTab('profile')" data-tab="profile">Profiili</div>
+    <div class="tab" onclick="switchTab('stream')" data-tab="stream">Stream</div>
+    <div class="tab" onclick="switchTab('theme')" data-tab="theme">Teema</div>
   </div>
 
   <!-- ═══════════════════════════════════════════
@@ -413,7 +413,7 @@
       </div>
       <h3 style="margin-top:12px">Valmiit teemat (klikkaa &rarr; esikatsele &rarr; tallenna)</h3>
       <div class="preset-grid" id="presetGrid"></div>
-      <div id="themePreview" class="theme-preview-card hidden" style="margin-top:12px"></div>
+      <div id="themePreview" class="theme-preview-card" style="margin-top:12px"></div>
       <button class="small" onclick="saveTheme()" style="margin-top:8px">Tallenna teema</button>
     </div>
   </div>
@@ -476,7 +476,7 @@ function switchTab(t) {
   document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden'));
   document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
   document.getElementById('tab-'+t).classList.remove('hidden');
-  document.querySelector(`.tab[data-tab='${t}']`).classList.add('active');
+  const tabBtn = document.querySelector(`.tab[data-tab='${t}']`); if(tabBtn) tabBtn.classList.add('active');
   currentTab = t;
 }
 
@@ -741,7 +741,7 @@ async function loadCodes() {
       <span class="type-badge">CODE</span>
       <span class="title">${esc(l.title)}</span>
       <code style="font-size:0.75rem;color:#aaa;flex:2;word-break:break-all">${esc(l.code||'')}</code>
-      <span>${(l.tags||'').split(',').filter(Boolean).map(t=>`<span class="tag-badge" style="cursor:pointer" onclick="addTagToInput('cdTags','${esc(t.trim())}')">${esc(t.trim())}</span>`).join('')}</span>
+      <span>${(Array.isArray(l.tags)?l.tags.join(','):(l.tags||'')).split(',').filter(Boolean).map(t=>`<span class="tag-badge" style="cursor:pointer" onclick="addTagToInput('cdTags','${esc(t.trim())}')">${esc(t.trim())}</span>`).join('')}</span>
       <input type="color" value="${l.color||'#ff6b35'}" style="width:32px;flex:none"
              onchange="updateItem('codes','${l.id}',{color:this.value})" title="Väri">
       <span class="actions">
@@ -818,7 +818,7 @@ async function loadAffiliates() {
       <span class="type-badge">AF</span>
       <span class="title">${esc(l.title||l.url)}</span>
       <span class="url">${esc(l.url).slice(0,50)}</span>
-      <span>${(l.tags||'').split(',').filter(Boolean).map(t=>`<span class="tag-badge" style="cursor:pointer" onclick="addTagToInput('afTags','${esc(t.trim())}')">${esc(t.trim())}</span>`).join('')}</span>
+      <span>${(Array.isArray(l.tags)?l.tags.join(','):(l.tags||'')).split(',').filter(Boolean).map(t=>`<span class="tag-badge" style="cursor:pointer" onclick="addTagToInput('afTags','${esc(t.trim())}')">${esc(t.trim())}</span>`).join('')}</span>
       ${l.youtubeId?`<span style="font-size:0.7rem;color:#ef4444">▶ YT</span>`:''}
       <input type="color" value="${l.color||'#ff6b35'}" style="width:32px;flex:none"
              onchange="updateItem('affiliates','${l.id}',{color:this.value})" title="Väri">
@@ -899,7 +899,7 @@ function hex(name, val) {
   if (el && val !== undefined) el.value = val;
   return el ? el.value : '';
 }
-async function loadTheme() {
+async async function loadTheme() {
   const t = await api('/theme');
   hex('tAccent',  t.accent);
   hex('tBg1',     t.bgPrimary);
@@ -911,7 +911,7 @@ async function loadTheme() {
   hex('tAnim',    t.animationColor);
   document.getElementById('tBgImage').value  = t.bgImage  || '';
   document.getElementById('tAnimType').value   = t.bgAnimation || '';
-  loadPresets();
+  await loadPresets();
 }
 function themePayload() {
   return {
@@ -981,6 +981,77 @@ function addTagToInput(inputId, tag) {
   el.value = el.value ? el.value.trim().replace(/,+$/,'') + ',' + tag : tag;
 }
 
+// ── Theme live preview ──────────────────────────────────────
+function updateThemePreview() {
+  const ac = document.getElementById('tAccent').value;
+  const bg = document.getElementById('tBg').value;
+  const ca = document.getElementById('tCard').value;
+  const ch = document.getElementById('tCardH').value;
+  const tx = document.getElementById('tTxt').value;
+  const an = document.getElementById('tAnimType').value;
+  document.getElementById('prevBg').style.background = bg;
+  document.getElementById('prevBg').style.color = tx;
+  document.getElementById('prevCard').style.background = ca;
+  document.getElementById('prevCard').style.color = tx;
+  document.getElementById('prevCard').textContent = 'Linkki-kortti';
+  document.getElementById('prevCardH').style.background = ch;
+  document.getElementById('prevCardH').style.color = tx;
+  document.getElementById('prevCardH').textContent = 'Hover: ' + ac;
+  document.getElementById('prevCardH').style.borderLeft = `4px solid ${ac}`;
+  document.getElementById('themeInfo').textContent = `Accent: ${ac} | BG: ${bg} | Card: ${ca} | Hover: ${ch} | Anim: ${an}`;
+}
+
+function updateAnimPreview() {
+  const type = document.getElementById('tAnimType')?.value;
+  const color = document.getElementById('tAnim').value;
+  const box = document.getElementById('animPreview');
+  if (!box) return;
+  if (!type || type === 'none') { box.innerHTML = ''; return; }
+  box.innerHTML = `<canvas id="animCanvas" style="width:100%;height:80px;border-radius:10px"></canvas>`;
+  // Trigger mini animation based on type
+  const canvas = document.getElementById('animCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth * 2;
+  canvas.height = canvas.offsetHeight * 2;
+  ctx.scale(2,2);
+  let frame=0;
+  function draw() {
+    frame++;
+    ctx.clearRect(0,0,canvas.offsetWidth,canvas.offsetHeight);
+    if (type==='particles') {
+      for(let i=0;i<30;i++){
+        const x=(Math.sin(frame*0.02+i)*0.5+0.5)*canvas.offsetWidth;
+        const y=((frame*0.5+i*17)%canvas.offsetHeight);
+        ctx.fillStyle=color; ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill();
+      }
+    } else if(type==='stars') {
+      ctx.fillStyle=color;
+      for(let i=0;i<20;i++){const x=(i*73+frame*0.3)%canvas.offsetWidth;const y=(i*37+frame*0.1)%canvas.offsetHeight;ctx.fillRect(x,y,2,2);}
+    } else if(type==='matrix') {
+      ctx.fillStyle='rgba(0,0,0,0.1)'; ctx.fillRect(0,0,canvas.offsetWidth,canvas.offsetHeight);
+      ctx.fillStyle=color; ctx.font='14px monospace';
+      for(let i=0;i<10;i++){const x=i*14;const y=(frame+i*13)%canvas.offsetHeight;ctx.fillText(String.fromCharCode(0x30A0+Math.random()*96),x,y);}
+    } else if(type==='bubbles') {
+      ctx.fillStyle=color+'44';
+      for(let i=0;i<15;i++){const x=(i*47+frame*0.5)%canvas.offsetWidth;const y=((frame*0.3+i*23)%canvas.offsetHeight);ctx.beginPath();ctx.arc(x,y,5+i%5,0,Math.PI*2);ctx.fill();}
+    } else {
+      ctx.fillStyle=color;
+      for(let i=0;i<10;i++){ctx.fillRect(i*14,(Math.sin(frame*0.05+i)*0.5+0.5)*canvas.offsetHeight,8,canvas.offsetHeight*0.6);}
+    }
+    if(type!=='') requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// Wire up theme inputs to live preview
+function wireThemeInputs() {
+  ['tAccent','tBg','tCard','tCardH','tTxt','tAnimType','tAnim'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => { updateThemePreview(); updateAnimPreview(); });
+  });
+}
+
 // ════════════════════════════════════════════════════════
 function esc(s) {
   if (!s) return '';
@@ -1015,9 +1086,9 @@ async function updateItem(type, id, patch) {
 // ════════════════════════════════════════════════════════
 async function loadAll() {
   await Promise.all([loadLinks(), loadCodes(), loadAffiliates(), loadProfile()]);
-  loadTheme(); loadStreamSetting();
+  await loadTheme(); loadStreamSetting();
 }
-window.addEventListener('DOMContentLoaded', checkAuth);
+window.addEventListener('DOMContentLoaded', () => { checkAuth(); setTimeout(wireThemeInputs, 500); });
 </script>
 </body>
 </html>
