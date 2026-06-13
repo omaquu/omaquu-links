@@ -85,6 +85,13 @@
             "icon": "email",
             "category": "contact",
             "live": false
+        },
+        {
+            "title": "Testi",
+            "url": "https://example.com",
+            "color": "#ff0000",
+            "sort_order": 0,
+            "id": "a727beb6"
         }
     ],
     "codes": [
