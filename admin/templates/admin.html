@@ -178,7 +178,7 @@
     <h1>🔐 Admin</h1>
     <p class="subtitle">omaquu-links hallinta</p>
     <input type="password" id="loginPw" placeholder="Salasana" onkeydown="if(event.key==='Enter')doLogin()">
-    <button class="primary" onclick="doLogin()" style="width:100%;margin-top:10px">Kirjaudu</button>
+    <button class="primary" id="loginBtn" onclick="doLogin()" onmousedown="doLogin()" style="width:100%;margin-top:10px;padding:12px;font-size:1rem;cursor:pointer">Kirjaudu</button>
     <div id="loginError" class="login-error hidden"></div>
     <p class="subtitle" style="margin-top:10px">vain omistajalle</p>
   </div>
@@ -447,19 +447,26 @@ async function api(url, opts={}) {
 // ════════════════════════════════════════════════════════
 async function checkAuth() {
   const s = await fetch('/api/auth/status', {credentials:'same-origin'}).then(r=>r.json());
-  if (!s.authenticated) return;
+  if (!s.authenticated) {
+    console.log('Not authenticated, showing login');
+    return;
+  }
   document.getElementById('loginOverlay').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   loadAll();
 }
 async function doLogin() {
   const pw = document.getElementById('loginPw').value;
+  console.log('doLogin called, password length:', pw.length);
   const res = await fetch('/api/auth/login', {
     method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({password: pw})
   });
   if (!res.ok) {
-    document.getElementById('loginError').textContent = 'Väärä salasana';
+    const errText = await res.text().catch(()=>'Network error');
+    document.getElementById('loginError').textContent = 'Virhe: ' + errText;
+    document.getElementById('loginError').classList.remove('hidden');
+    console.error('Login failed:', errText);
     return;
   }
   checkAuth();
@@ -983,22 +990,21 @@ function addTagToInput(inputId, tag) {
 
 // ── Theme live preview ──────────────────────────────────────
 function updateThemePreview() {
-  const ac = document.getElementById('tAccent').value;
-  const bg = document.getElementById('tBg').value;
-  const ca = document.getElementById('tCard').value;
-  const ch = document.getElementById('tCardH').value;
-  const tx = document.getElementById('tTxt').value;
-  const an = document.getElementById('tAnimType').value;
-  document.getElementById('prevBg').style.background = bg;
-  document.getElementById('prevBg').style.color = tx;
-  document.getElementById('prevCard').style.background = ca;
-  document.getElementById('prevCard').style.color = tx;
-  document.getElementById('prevCard').textContent = 'Linkki-kortti';
-  document.getElementById('prevCardH').style.background = ch;
-  document.getElementById('prevCardH').style.color = tx;
-  document.getElementById('prevCardH').textContent = 'Hover: ' + ac;
-  document.getElementById('prevCardH').style.borderLeft = `4px solid ${ac}`;
-  document.getElementById('themeInfo').textContent = `Accent: ${ac} | BG: ${bg} | Card: ${ca} | Hover: ${ch} | Anim: ${an}`;
+  const get = id => { const el = document.getElementById(id); return el ? el.value : null; };
+  const ac = get('tAccent') || '#ff6b35';
+  const bg = get('tBg1') || get('tBg') || '#0a0a0f';
+  const ca = get('tCard') || '#1a1a24';
+  const ch = get('tCardH') || '#22222e';
+  const tx = get('tTxt') || '#ffffff';
+  const an = get('tAnimType') || '';
+  const elBg = document.getElementById('prevBg');
+  const elCard = document.getElementById('prevCard');
+  const elCardH = document.getElementById('prevCardH');
+  const elInfo = document.getElementById('themeInfo');
+  if (elBg) { elBg.style.background = bg; elBg.style.color = tx; }
+  if (elCard) { elCard.style.background = ca; elCard.style.color = tx; elCard.textContent = 'Linkki-kortti'; }
+  if (elCardH) { elCardH.style.background = ch; elCardH.style.color = tx; elCardH.textContent = 'Hover: ' + ac; elCardH.style.borderLeft = `4px solid ${ac}`; }
+  if (elInfo) elInfo.textContent = `Accent: ${ac} | Tausta: ${bg} | Kortti: ${ca} | Hover: ${ch} | Anim: ${an}`;
 }
 
 function updateAnimPreview() {
@@ -1039,7 +1045,7 @@ function updateAnimPreview() {
       ctx.fillStyle=color;
       for(let i=0;i<10;i++){ctx.fillRect(i*14,(Math.sin(frame*0.05+i)*0.5+0.5)*canvas.offsetHeight,8,canvas.offsetHeight*0.6);}
     }
-    if(type!=='') requestAnimationFrame(draw);
+    if(type && type !== 'none' && type !== '') requestAnimationFrame(draw);
   }
   draw();
 }
@@ -1088,7 +1094,28 @@ async function loadAll() {
   await Promise.all([loadLinks(), loadCodes(), loadAffiliates(), loadProfile()]);
   await loadTheme(); loadStreamSetting();
 }
-window.addEventListener('DOMContentLoaded', () => { checkAuth(); setTimeout(wireThemeInputs, 500); });
+window.addEventListener('DOMContentLoaded', () => { console.log('DOMContentLoaded fired'); checkAuth(); setTimeout(wireThemeInputs, 500); });
+</script>
+<script>
+  // Debug: verify doLogin function exists
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      var btn = document.getElementById('loginBtn');
+      if (btn) {
+        btn.addEventListener('click', function() {
+          console.log('Login button clicked!');
+          if (typeof doLogin === 'function') {
+            console.log('doLogin exists, calling...');
+            doLogin();
+          } else {
+            console.error('doLogin NOT DEFINED!');
+            document.getElementById('loginError').textContent = 'JS error: doLogin not found';
+            document.getElementById('loginError').classList.remove('hidden');
+          }
+        }, true); // capture phase
+      }
+    }, 100);
+  });
 </script>
 </body>
 </html>
