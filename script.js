@@ -43,7 +43,7 @@ async function loadData() {
         const response = await fetch('data.json');
         siteData = await response.json();
         renderAll();
-        checkKickLive();
+        checkStreamLive();
     } catch (err) {
         console.error('Failed to load data:', err);
         siteData = getFallbackData();
@@ -199,6 +199,149 @@ function startBgAnimation(type, color) {
             animFrame = requestAnimationFrame(drawStars);
         }
         drawStars();
+
+    } else if (type === 'grid') {
+        // Neon grid (Tron-like)
+        let offset = 0;
+        const spacing = 50;
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            offset = (offset + 0.3) % spacing;
+            ctx.strokeStyle = `rgba(${r},${g},${b},0.12)`;
+            ctx.lineWidth = 1;
+            // Vertical lines
+            for (let x = -offset; x < canvas.width + spacing; x += spacing) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            // Horizontal lines moving down
+            for (let y = -offset; y < canvas.height + spacing; y += spacing) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+            // Horizon glow
+            const grad = ctx.createLinearGradient(0, canvas.height * 0.5, 0, canvas.height);
+            grad.addColorStop(0, 'transparent');
+            grad.addColorStop(1, `rgba(${r},${g},${b},0.06)`);
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            animFrame = requestAnimationFrame(drawGrid);
+        }
+        drawGrid();
+
+    } else if (type === 'fire') {
+        // Rising fire particles
+        const sparks = Array.from({length: 80}, () => ({
+            x: Math.random() * canvas.width, y: canvas.height + Math.random() * 100,
+            vx: (Math.random() - 0.5) * 1.5, vy: -(Math.random() * 2 + 0.5),
+            size: Math.random() * 4 + 1, life: Math.random()
+        }));
+        function drawFire() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            sparks.forEach(p => {
+                const alpha = p.life * 0.7;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, Math.max(0.5, p.size * p.life), 0, Math.PI * 2);
+                // Color shifts from accent to orange/yellow as it rises
+                const er = Math.min(255, r + (255 - r) * (1 - p.life));
+                const eg = Math.min(200, g + (180 - g) * (1 - p.life));
+                ctx.fillStyle = `rgba(${er},${eg},${b},${alpha})`;
+                ctx.fill();
+                p.x += p.vx; p.y += p.vy; p.life -= 0.005;
+                if (p.life <= 0) { p.x = Math.random() * canvas.width; p.y = canvas.height + 10; p.life = 1; }
+            });
+            animFrame = requestAnimationFrame(drawFire);
+        }
+        drawFire();
+
+    } else if (type === 'bubbles') {
+        // Rising bubbles
+        const bubbles = Array.from({length: 50}, () => ({
+            x: Math.random() * canvas.width, y: canvas.height + Math.random() * 200,
+            size: Math.random() * 8 + 2, speed: Math.random() * 0.8 + 0.3,
+            wobble: Math.random() * Math.PI * 2
+        }));
+        let t = 0;
+        function drawBubbles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            t += 0.01;
+            bubbles.forEach(b => {
+                const bx = b.x + Math.sin(t + b.wobble) * 20;
+                ctx.beginPath();
+                ctx.arc(bx, b.y, Math.max(1, b.size), 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(${r},${g},${b},0.3)`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                // Highlight
+                ctx.beginPath();
+                ctx.arc(bx - b.size * 0.25, b.y - b.size * 0.25, Math.max(0.5, b.size * 0.2), 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${r},${g},${b},0.15)`;
+                ctx.fill();
+                b.y -= b.speed;
+                if (b.y < -b.size * 2) { b.y = canvas.height + b.size; b.x = Math.random() * canvas.width; }
+            });
+            animFrame = requestAnimationFrame(drawBubbles);
+        }
+        drawBubbles();
+
+    } else if (type === 'aurora') {
+        // Northern lights waves
+        let t = 0;
+        function drawAurora() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            t += 0.008;
+            for (let band = 0; band < 4; band++) {
+                ctx.beginPath();
+                const yBase = canvas.height * (0.2 + band * 0.12);
+                ctx.moveTo(0, yBase);
+                for (let x = 0; x <= canvas.width; x += 4) {
+                    const y = yBase + Math.sin(x * 0.005 + t * 2 + band) * 30
+                                    + Math.sin(x * 0.01 + t * 3 + band * 2) * 15;
+                    ctx.lineTo(x, y);
+                }
+                ctx.lineTo(canvas.width, canvas.height);
+                ctx.lineTo(0, canvas.height);
+                ctx.closePath();
+                const alpha = 0.03 + band * 0.01;
+                // Alternate between accent color and complementary
+                const cr = band % 2 === 0 ? r : Math.min(255, r + 80);
+                const cg = band % 2 === 0 ? g : Math.max(0, g - 60);
+                const cb = band % 2 === 0 ? b : Math.min(255, b + 100);
+                ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha})`;
+                ctx.fill();
+            }
+            animFrame = requestAnimationFrame(drawAurora);
+        }
+        drawAurora();
+
+    } else if (type === 'galaxy') {
+        // Swirling galaxy dots
+        const dots = Array.from({length: 200}, () => ({
+            angle: Math.random() * Math.PI * 2,
+            dist: Math.random() * Math.min(canvas.width, canvas.height) * 0.4 + 20,
+            speed: (Math.random() * 0.002 + 0.0005) * (Math.random() > 0.5 ? 1 : -1),
+            size: Math.random() * 2 + 0.5,
+            alpha: Math.random() * 0.5 + 0.1
+        }));
+        const cx = canvas.width / 2, cy = canvas.height / 2;
+        function drawGalaxy() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            dots.forEach(d => {
+                const x = cx + Math.cos(d.angle) * d.dist;
+                const y = cy + Math.sin(d.angle) * d.dist * 0.6;
+                ctx.beginPath();
+                ctx.arc(x, y, Math.max(0.3, d.size), 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${r},${g},${b},${d.alpha})`;
+                ctx.fill();
+                d.angle += d.speed;
+            });
+            // Center glow
+            const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 60);
+            grad.addColorStop(0, `rgba(${r},${g},${b},0.08)`);
+            grad.addColorStop(1, 'transparent');
+            ctx.fillStyle = grad;
+            ctx.fillRect(cx - 60, cy - 60, 120, 120);
+            animFrame = requestAnimationFrame(drawGalaxy);
+        }
+        drawGalaxy();
     }
 }
 
@@ -358,6 +501,7 @@ function renderAffiliates() {
             ${aff.image ? `
             <div class="affiliate-image-wrap">
                 <img src="${escHtml(aff.image)}" alt="${escHtml(aff.title)}" class="affiliate-image" loading="lazy">
+                ${aff.youtubeId ? `<div class="yt-play-overlay" onclick="event.stopPropagation();showYtEmbed('${escHtml(aff.youtubeId)}')"><span>▶</span></div>` : ''}
             </div>
             ` : ''}
             <div class="affiliate-content">
@@ -365,6 +509,7 @@ function renderAffiliates() {
                 <div class="affiliate-desc">${escHtml(aff.description || '')}</div>
                 <div class="affiliate-price">${escHtml(aff.price || '')}</div>
                 <div class="affiliate-features">${tagsHtml}</div>
+                ${aff.youtubeId ? `<button class="yt-preview-btn" onclick="event.stopPropagation();showYtEmbed('${escHtml(aff.youtubeId)}')">▶ Katso video</button>` : ''}
                 <a href="${escHtml(aff.url)}" target="_blank" rel="noopener noreferrer" class="affiliate-cta"${aff.color ? ` style="background:${aff.color}"` : ''} onclick="event.stopPropagation()">
                     <i data-lucide="shopping-cart"></i> Osta nyt
                 </a>
@@ -453,68 +598,74 @@ function filterShop() {
     if (noResults) noResults.style.display = visibleCount === 0 ? 'block' : 'none';
 }
 
-// ─── KICK LIVE EMBED ──────────────────────────────────────────────────────
-async function checkKickLive() {
+// ─── STREAM EMBED (Kick/Twitch) ─────────────────────────────────────────
+async function checkStreamLive() {
     const embed = document.getElementById('kickEmbed');
     const frame = document.getElementById('kickFrame');
     const liveDot = document.getElementById('liveDot');
     const embedTitle = document.getElementById('embedTitle');
     
-    // If streamAlwaysVisible, show embed always (even if offline)
     const alwaysShow = siteData.streamAlwaysVisible === true;
+    const streamType = siteData.streamType || 'kick';
+    const streamUser = siteData.streamUsername || 'omaquu';
     
-    // Find kick link
-    const kickLink = siteData.links?.find(l => l.icon === 'kick' || l.url?.includes('kick.com/'));
-    if (!kickLink) {
-        if (alwaysShow) {
-            // No kick link found but always-show is on — try hardcoded omaquu
-            setupEmbed(embed, frame, liveDot, embedTitle, 'omaquu', alwaysShow);
-        } else {
-            embed.style.display = 'none';
-        }
-        return;
+    // Set embed src based on type
+    let embedSrc = '';
+    if (streamType === 'twitch') {
+        embedSrc = `https://player.twitch.tv/?channel=${streamUser}&parent=${location.hostname}`;
+    } else {
+        embedSrc = `https://player.kick.com/${streamUser}`;
     }
     
-    const detected = detectEmbedFromUrl(kickLink.url);
-    if (!detected || detected.type !== 'kick') {
-        embed.style.display = alwaysShow ? 'block' : 'none';
-        return;
-    }
+    frame.src = embedSrc;
     
-    setupEmbed(embed, frame, liveDot, embedTitle, detected.username, alwaysShow);
-}
-
-async function setupEmbed(embed, frame, liveDot, embedTitle, username, alwaysShow) {
-    frame.src = `https://player.kick.com/${username}`;
-    
+    // Try to check live status
+    let isLive = false;
     try {
-        const res = await fetch(`https://kick.com/api/v2/channels/${username}`);
-        if (res.ok) {
-            const data = await res.json();
-            if (data.data?.livestream) {
-                // Actually live!
-                embed.style.display = 'block';
-                liveDot.style.background = 'var(--live)';
-                liveDot.classList.add('live-dot');
-                embedTitle.textContent = `LIVE @${username}`;
-                embed.style.borderColor = 'var(--live)';
-                embed.style.boxShadow = '0 0 20px rgba(239,68,68,0.2)';
-                return;
+        if (streamType === 'kick') {
+            const res = await fetch(`https://kick.com/api/v2/channels/${streamUser}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.data?.livestream) isLive = true;
             }
         }
+        // Twitch live check would need client-id — skip for now
+        if (streamType === 'twitch') isLive = true;  // Twitch needs auth, assume live when always
     } catch(e) {}
     
-    // Not live
-    if (alwaysShow) {
+    if (isLive) {
+        embed.style.display = 'block';
+        liveDot.style.background = 'var(--live)';
+        liveDot.classList.add('live-dot');
+        embedTitle.textContent = `LIVE @${streamUser}`;
+        embed.style.borderColor = 'var(--live)';
+        embed.style.boxShadow = '0 0 20px rgba(239,68,68,0.2)';
+    } else if (alwaysShow) {
         embed.style.display = 'block';
         liveDot.style.background = 'var(--text-muted)';
         liveDot.classList.remove('live-dot');
-        embedTitle.textContent = `@${username} · Offline`;
+        embedTitle.textContent = `@${streamUser} · Offline · ${streamType.toUpperCase()}`;
         embed.style.borderColor = 'var(--border)';
         embed.style.boxShadow = 'none';
     } else {
         embed.style.display = 'none';
     }
+}
+
+// ─── YOUTUBE EMBED MODAL ─────────────────────────────────────────────────
+function showYtEmbed(videoId) {
+    let overlay = document.getElementById('ytOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'ytOverlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+        document.body.appendChild(overlay);
+    }
+    overlay.innerHTML = `<div style="width:90%;max-width:560px;aspect-ratio:16/9;position:relative">
+        <iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" style="width:100%;height:100%;border:0;border-radius:12px" allowfullscreen allow="autoplay"></iframe>
+        <div onclick="document.getElementById('ytOverlay').remove()" style="position:absolute;top:-30px;right:0;color:#fff;font-size:1.5rem;cursor:pointer">✕</div>
+    </div>`;
 }
 
 // ─── TAB SWITCHING ───────────────────────────────────────────────────────

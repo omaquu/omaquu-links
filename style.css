@@ -449,6 +449,32 @@ body {
 .no-results i { width: 48px; height: 48px; display: block; margin: 0 auto 0.75rem; opacity: 0.4; }
 .no-results p { font-size: 1rem; }
 
+/* ═════════════════════════════════════
+   YOUTUBE PLAY OVERLAY & BUTTON
+   ═══════════════════════════════════ */
+.yt-play-overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.3);
+    opacity: 0; transition: opacity 0.25s;
+    cursor: pointer;
+}
+.affiliate-card:hover .yt-play-overlay { opacity: 1; }
+.yt-play-overlay span {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: rgba(255,0,0,0.9); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; line-height: 1;
+}
+.yt-preview-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    margin-top: 0.5rem; padding: 0.4rem 0.8rem;
+    background: #ff000022; border: 1px solid #ff000044;
+    color: #ff6666; border-radius: 6px; font-size: 0.8rem;
+    cursor: pointer; transition: all 0.2s;
+}
+.yt-preview-btn:hover { background: #ff000044; border-color: #ff0000; color: #fff; }
+
 /* ═══════════════════════════════════
    FOOTER
    ═══════════════════════════════════ */

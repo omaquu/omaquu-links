@@ -224,13 +224,28 @@
     <div class="card">
       <h2>＋ Lisää koodi</h2>
       <div class="row">
-        <div class="col"><label>Otsikko</label><input id="cdTitle"></div>
-        <div class="col-2"><label>Koodi / lohko</label><textarea id="cdCode" style="min-height:80px"></textarea></div>
+        <div class="col"><label>Kauppa</label><input id="cdTitle"></div>
+        <div class="col-2"><label>Koodi</label><input id="cdCode"></div>
+        <div class="col"><label>Alennus</label><input id="cdDiscount" placeholder="10%"></div>
+      </div>
+      <div class="row">
+        <div class="col-2"><label>Kuvaus</label><input id="cdDescription"></div>
+        <div class="col"><label>URL</label><input id="cdUrl" placeholder="https://..."></div>
         <div class="col"><label>Väri</label><input type="color" id="cdColor" class="color-input" value="#ff6b35"></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>Tagit (comma)</label><input id="cdTags" placeholder="tech, kauppa"></div>
       </div>
       <button class="primary" onclick="addCode()">Tallenna koodi</button>
     </div>
-    <div class="card"><h2>Koodit</h2><div id="codesList" class="scroll-list"></div></div>
+    <div class="card">
+      <h2>Koodit</h2>
+      <div class="row" style="margin-bottom:8px">
+        <div class="col"><input id="codeSearch" placeholder="🔍 Hae koodeja..." oninput="filterCodes()"></div>
+      </div>
+      <div id="codeTags" style="margin-bottom:10px"></div>
+      <div id="codesList" class="scroll-list"></div>
+    </div>
   </div>
 
   <!-- ═══════════════════════════════════════════
@@ -255,6 +270,7 @@
       </div>
       <div class="row">
         <div class="col"><label>Tagit (comma)</label><input id="afTags" placeholder="tech, kauppa"></div>
+        <div class="col"><label>YouTube video ID</label><input id="afYoutube" placeholder="dQw4w9WgXcQ"></div>
       </div>
       <button class="primary" onclick="addAffiliate()">Tallenna affiliate</button>
     </div>
@@ -301,13 +317,22 @@
     <div class="card">
       <h2>Stream-embed</h2>
       <p style="font-size:0.82rem;color:#888;margin-bottom:12px">
-        Ota käyttöön "Näytä aina" jos haluat että stream-embed on näkyvissä koko ajan, ei vain livenä.
+        Valitse stream-tyyppi ja käyttäjätunnus. "Näytä aina" pitää embedin näkyvissä myös offline-tilassa.
       </p>
+      <div class="row">
+        <div class="col"><label>Stream-tyyppi</label>
+          <select id="streamType" onchange="saveStreamSetting()">
+            <option value="kick">Kick</option>
+            <option value="twitch">Twitch</option>
+          </select>
+        </div>
+        <div class="col-2"><label>Käyttäjätunnus</label><input id="streamUser" placeholder="omaquu" onchange="saveStreamSetting()"></div>
+      </div>
       <div class="row" style="align-items:center">
         <div class="col" style="flex:0 0 auto">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
             <input type="checkbox" id="streamAlways" onchange="saveStreamSetting()" style="width:18px;height:18px">
-            <span>Näytä embed aina</span>
+            <span>Näytä embed aina (myös offline)</span>
           </label>
         </div>
       </div>
@@ -342,6 +367,11 @@
             <option value="particles">Partikkelit</option>
             <option value="matrix">Matrix</option>
             <option value="stars">Tähdet</option>
+            <option value="grid">Neon Grid</option>
+            <option value="fire">Tuli</option>
+            <option value="bubbles">Kuplat</option>
+            <option value="aurora">Revontulet</option>
+            <option value="galaxy">Galaksi</option>
           </select>
         </div>
       </div>
@@ -553,27 +583,44 @@ async function dropItem(e) {
 // ════════════════════════════════════════════════════════
 // CODES
 // ════════════════════════════════════════════════════════
+let codeFilterTags = new Set();
 async function addCode() {
   const p = {
     title: document.getElementById('cdTitle').value,
     code:  document.getElementById('cdCode').value,
+    discount: document.getElementById('cdDiscount').value,
+    description: document.getElementById('cdDescription').value,
+    url: document.getElementById('cdUrl').value,
     color: document.getElementById('cdColor').value,
+    tags: document.getElementById('cdTags').value,
     sort_order: 999,
   };
   if (!p.title || !p.code) return;
   await api('/codes', {method:'POST', body: JSON.stringify(p)});
-  document.getElementById('cdTitle').value='';
-  document.getElementById('cdCode').value='';
+  ['cdTitle','cdCode','cdDiscount','cdDescription','cdUrl','cdTags'].forEach(i=>document.getElementById(i).value='');
   loadCodes();
 }
 async function loadCodes() {
-  const list = await api('/codes');
-  list.sort((a,b)=>a.sort_order-b.sort_order);
-  document.getElementById('codesList').innerHTML = list.map(l=>`
+  const [list, tags] = await Promise.all([api('/codes'), api('/codes/tags')]);
+  list.sort((a,b)=>(a.sort_order||999)-(b.sort_order||999));
+  // Render tag filters
+  document.getElementById('codeTags').innerHTML = tags.length
+    ? `<span class="tag-badge" style="cursor:pointer;${codeFilterTags.size===0?'background:#ff6b3522;border-color:#ff6b35;color:#ff6b35':''}" onclick="codeFilterTags.clear();filterCodes();loadCodes()">Kaikki</span>` +
+      tags.map(t => `<span class="tag-badge" style="cursor:pointer;${codeFilterTags.has(t.tag)?'background:#ff6b3522;border-color:#ff6b35;color:#ff6b35':''}" onclick="addTagToInput('cdTags','${esc(t.tag)}');codeFilterTags.clear();codeFilterTags.add('${esc(t.tag)}');filterCodes();loadCodes()">#${esc(t.tag)} (${t.count})</span>`).join('')
+    : '';
+  // Render list
+  const searchVal = document.getElementById('codeSearch')?.value.toLowerCase() || '';
+  document.getElementById('codesList').innerHTML = list.filter(l => {
+    const text = (l.title+l.code+l.description+l.tags).toLowerCase();
+    const matchSearch = !searchVal || text.includes(searchVal);
+    const matchTags = codeFilterTags.size === 0 || (l.tags||'').split(',').map(t=>t.trim().toLowerCase()).some(t=>codeFilterTags.has(t));
+    return matchSearch && matchTags;
+  }).map(l=>`
     <div class="item">
       <span class="type-badge">CODE</span>
       <span class="title">${esc(l.title)}</span>
-      <code style="font-size:0.75rem;color:#aaa;flex:3;word-break:break-all">${esc((l.code||'').slice(0,80))}</code>
+      <code style="font-size:0.75rem;color:#aaa;flex:2;word-break:break-all">${esc(l.code||'')}</code>
+      <span>${(l.tags||'').split(',').filter(Boolean).map(t=>`<span class="tag-badge" style="cursor:pointer" onclick="addTagToInput('cdTags','${esc(t.trim())}')">${esc(t.trim())}</span>`).join('')}</span>
       <input type="color" value="${l.color||'#ff6b35'}" style="width:32px;flex:none"
              onchange="updateItem('codes','${l.id}',{color:this.value})" title="Väri">
       <span class="actions">
@@ -581,6 +628,7 @@ async function loadCodes() {
       </span>
     </div>`).join('');
 }
+function filterCodes() { loadCodes(); }
 
 // ════════════════════════════════════════════════════════
 // AFFILIATES
@@ -592,11 +640,12 @@ async function addAffiliate() {
     image: document.getElementById('afImage').value,
     tags:  document.getElementById('afTags').value,
     color: document.getElementById('afColor').value,
+    youtubeId: document.getElementById('afYoutube').value,
     sort_order: 999,
   };
   if (!p.title || !p.url) return;
   await api('/affiliates', {method:'POST', body: JSON.stringify(p)});
-  ['afTitle','afUrl','afImage','afTags'].forEach(i=>document.getElementById(i).value='');
+  ['afTitle','afUrl','afImage','afTags','afYoutube'].forEach(i=>document.getElementById(i).value='');
   loadAffiliates();
 }
 async function loadAffiliates() {
@@ -607,7 +656,7 @@ async function loadAffiliates() {
   // tags
   document.getElementById('affTags').innerHTML =
     tags.length
-      ? tags.map(t=>`<span class="tag-badge">#${esc(t.tag)} <span class="tag-count">(${t.count})</span></span>`).join('')
+      ? tags.map(t=>`<span class="tag-badge" style="cursor:pointer" onclick="addTagToInput('afTags','${esc(t.tag)}')">#${esc(t.tag)} <span class="tag-count">(${t.count})</span></span>`).join('')
       : '<span class="subtitle">Ei tageja</span>';
   // rows with filter — show all tags on row
   document.getElementById('affList').innerHTML = list.map(l=>`
@@ -615,7 +664,8 @@ async function loadAffiliates() {
       <span class="type-badge">AF</span>
       <span class="title">${esc(l.title||l.url)}</span>
       <span class="url">${esc(l.url).slice(0,50)}</span>
-      <span>${(l.tags||'').split(',').filter(Boolean).map(t=>`<span class="tag-badge">${esc(t.trim())}</span>`).join('')}</span>
+      <span>${(l.tags||'').split(',').filter(Boolean).map(t=>`<span class="tag-badge" style="cursor:pointer" onclick="addTagToInput('afTags','${esc(t.trim())}')">${esc(t.trim())}</span>`).join('')}</span>
+      ${l.youtubeId?`<span style="font-size:0.7rem;color:#ef4444">▶ YT</span>`:''}
       <input type="color" value="${l.color||'#ff6b35'}" style="width:32px;flex:none"
              onchange="updateItem('affiliates','${l.id}',{color:this.value})" title="Väri">
       <span class="actions">
@@ -646,17 +696,21 @@ async function parseTarralink() {
 // STREAM
 // ════════════════════════════════════════════════════════
 async function loadStreamSetting() {
-  const r = await api('/stream-always');
+  const r = await api('/stream-config');
   document.getElementById('streamAlways').checked = r.streamAlwaysVisible;
+  document.getElementById('streamType').value = r.streamType || 'kick';
+  document.getElementById('streamUser').value = r.streamUsername || '';
 }
 async function saveStreamSetting() {
   const v = document.getElementById('streamAlways').checked;
-  await api('/stream-always', {
+  const t = document.getElementById('streamType').value;
+  const u = document.getElementById('streamUser').value;
+  await api('/stream-config', {
     method:'PUT',
-    body: JSON.stringify({streamAlwaysVisible: v})
+    body: JSON.stringify({streamAlwaysVisible: v, streamType: t, streamUsername: u})
   });
   document.getElementById('streamMsg').textContent = v
-    ? '✓ Embed on nyt aina näkyvissä' : 'Embed näkyy vain livenä';
+    ? `✓ ${t.toUpperCase()} embed näkyy aina` : `${t.toUpperCase()} embed vain livenä`;
   setTimeout(()=>document.getElementById('streamMsg').textContent='', 2500);
 }
 
@@ -740,6 +794,15 @@ function previewEmbed() {
 
 // ════════════════════════════════════════════════════════
 // UTIL
+// ════════════════════════════════════════════════════════
+function addTagToInput(inputId, tag) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  const existing = el.value.split(',').map(t=>t.trim().toLowerCase()).filter(Boolean);
+  if (existing.includes(tag.toLowerCase())) return;  // already there
+  el.value = el.value ? el.value.trim().replace(/,+$/,'') + ',' + tag : tag;
+}
+
 // ════════════════════════════════════════════════════════
 function esc(s) {
   if (!s) return '';
