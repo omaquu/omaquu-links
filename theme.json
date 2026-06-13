@@ -8,6 +8,5 @@
     "textSecondary": "#4ade80",
     "bgImage": "",
     "bgAnimation": "matrix",
-    "animationColor": "#10b981",
-    "accentGlow": "rgba(16,185,129,0.3)"
+    "animationColor": "#10b981"
 }
