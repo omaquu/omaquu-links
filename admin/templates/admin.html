@@ -428,9 +428,14 @@ function uid() { return Math.random().toString(36).slice(2,10); }
 
 async function api(url, opts={}) {
   const res = await fetch(API+url, {
-    ...opts, headers: {'Content-Type':'application/json', ...(opts.headers||{})}
+    ...opts,
+    credentials: 'same-origin',
+    headers: {'Content-Type':'application/json', ...(opts.headers||{})}
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) {
+    if (res.status === 401) { location.reload(); return {}; }
+    throw new Error(await res.text());
+  }
   return res.json();
 }
 
