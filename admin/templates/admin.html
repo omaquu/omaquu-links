@@ -138,6 +138,28 @@
     background: #1c1c28; border: 1px solid #282838; font-size: 0.78rem;
   }
   .preset:hover { border-color: #ff6b35; }
+  /* Theme preview card */
+  .theme-preview-card {
+    background: #1c1c28; border: 1px solid #333; border-radius: 12px;
+    padding: 16px; display: flex; gap: 16px; align-items: center;
+  }
+  .theme-preview-card .preview-swatch {
+    width: 48px; height: 48px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+  }
+  .theme-preview-card .preview-text {
+    font-size: 0.82rem; line-height: 1.5;
+  }
+  .theme-preview-card .preview-name {
+    font-weight: 600; font-size: 0.9rem; margin-bottom: 4px;
+  }
+  .theme-preview-card .preview-row {
+    display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap;
+  }
+  .theme-preview-card .preview-chip {
+    padding: 2px 8px; border-radius: 5px; font-size: 0.7rem;
+  }
 </style>
 </head>
 <body>
@@ -381,8 +403,9 @@
           </select>
         </div>
       </div>
-      <h3 style="margin-top:12px">Presetit</h3>
+      <h3 style="margin-top:12px">Valmiit teemat (klikkaa &rarr; esikatsele &rarr; tallenna)</h3>
       <div class="preset-grid" id="presetGrid"></div>
+      <div id="themePreview" class="theme-preview-card hidden" style="margin-top:12px"></div>
       <button class="small" onclick="saveTheme()" style="margin-top:8px">Tallenna teema</button>
     </div>
   </div>
@@ -898,9 +921,10 @@ async function saveTheme() {
 async function loadPresets() {
   const presets = await api('/theme/presets');
   const grid = document.getElementById('presetGrid');
-  const names = {orange:'Orange', purple:'Purple', matrix:'Matrix', stars:'Stars', midnight:'Midnight', neon:'Neon', fire:'Fire', ocean:'Ocean', aurora:'Aurora', galaxy:'Galaxy'};
+  const names = {orange:'🍊 Orange', purple:'💜 Purple', matrix:'🟢 Matrix', stars:'⭐ Stars', midnight:'🌙 Midnight', neon:'⚡ Neon', fire:'🔥 Fire', ocean:'🌊 Ocean', aurora:'🌌 Aurora', galaxy:'🌌 Galaxy'};
+  const simpleNames = {orange:'Orange', purple:'Purple', matrix:'Matrix', stars:'Stars', midnight:'Midnight', neon:'Neon', fire:'Fire', ocean:'Ocean', aurora:'Aurora', galaxy:'Galaxy'};
   grid.innerHTML = Object.entries(presets).map(([k,v]) => `
-    <div class="preset" onclick="applyPreset('${k}')" title="${names[k]||k}">
+    <div class="preset" onclick="applyPreset('${k}')" title="${simpleNames[k]||k}\nAccent: ${v.accent}\nTausta: ${v.bgPrimary}\nKortti: ${v.bgCard}\nAnimaatio: ${v.bgAnimation||'Ei'}">
       <span style="display:inline-block;width:14px;height:14px;background:${v.accent};border-radius:50%;vertical-align:middle"></span>
       ${names[k]||k}
     </div>`).join('');
