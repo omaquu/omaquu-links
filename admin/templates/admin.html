@@ -647,7 +647,7 @@ async function dropAff(e) {
   const to   = list.indexOf(e.currentTarget);
   if (from===to) return;
   const items = await api('/affiliates');
-  items.sort((a,b)=>b.sort_order-a.sort_order);
+  items.sort((a,b)=>(a.sort_order||999)-(b.sort_order||999));
   const item = items.splice(from, 1)[0];
   items.splice(to, 0, item);
   const payload = items.map((it, i) => ({id: it.id, sort_order: i}));
@@ -769,7 +769,7 @@ async function loadAffiliates() {
   const [list, tags] = await Promise.all([
     api('/affiliates'), api('/affiliates/tags')
   ]);
-  list.sort((a,b)=>b.sort_order-a.sort_order);
+  list.sort((a,b)=>a.sort_order-b.sort_order);
   // tags
   document.getElementById('affTags').innerHTML =
     tags.length

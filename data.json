@@ -122,7 +122,7 @@
             "description": "65% Mekaaninen näppäimistö, näytöllä",
             "price": "$75.99",
             "image": "https://cdn.shopify.com/s/files/1/0280/3931/5529/files/6_39119f8d-255b-404c-9b5e-688a11e9d56b.jpg?v=1747212239",
-            "url": "https://epomaker.com/products/epomaker-he65-mec?_pos=1&_psq=he65+mec&_ss=e&_v=1.0&sca_ref=8947059.0C4M5Nm0LS",
+            "url": "https://epomaker.com/products/epomaker-he65-mec",
             "features": [
                 "5-layer sound dampening",
                 "TFT-näyttö",
@@ -133,7 +133,10 @@
                 "tech",
                 "keyboard",
                 "new"
-            ]
+            ],
+            "sort_order": 0,
+            "color": "#ff6b35",
+            "youtubeId": ""
         },
         {
             "title": "AKKO TAC75 HE",
@@ -141,7 +144,7 @@
             "image": "//ae01.alicdn.com/kf/Seb57c41048bb4680a2d04c4d453b9746W.jpg_350x350.jpg",
             "tags": "HE, magnetic switch, magnetic, keyboard",
             "color": "#ff6b35",
-            "sort_order": 999,
+            "sort_order": 1,
             "id": "8776e1a0"
         }
     ],
