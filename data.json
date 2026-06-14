@@ -24,7 +24,7 @@
             "icon": "twitch",
             "category": "stream",
             "live": true,
-            "sort_order": 3,
+            "sort_order": 2,
             "clicks": 0,
             "color": "#8000ff"
         },
@@ -35,7 +35,7 @@
             "icon": "kick",
             "category": "stream",
             "live": true,
-            "sort_order": 2,
+            "sort_order": 1,
             "clicks": 0,
             "color": "#80ff80"
         },
@@ -97,7 +97,7 @@
             "icon": "kofi",
             "category": "support",
             "live": false,
-            "sort_order": 1,
+            "sort_order": 3,
             "clicks": 0
         }
     ],
