@@ -13,7 +13,7 @@
             "icon": "youtube",
             "category": "social",
             "live": false,
-            "sort_order": 2,
+            "sort_order": 3,
             "clicks": 0,
             "color": "#ff0000"
         },
@@ -46,7 +46,7 @@
             "icon": "tiktok",
             "category": "social",
             "live": false,
-            "sort_order": 3,
+            "sort_order": 4,
             "clicks": 0,
             "color": "#000000"
         },
@@ -57,7 +57,7 @@
             "icon": "x",
             "category": "social",
             "live": false,
-            "sort_order": 4,
+            "sort_order": 2,
             "clicks": 0
         },
         {
