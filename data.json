@@ -99,7 +99,8 @@
             "category": "support",
             "live": false,
             "sort_order": 5,
-            "clicks": 0
+            "clicks": 0,
+            "color": "#ffffff"
         }
     ],
     "codes": [
