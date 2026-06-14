@@ -57,7 +57,7 @@
             "icon": "x",
             "category": "social",
             "live": false,
-            "sort_order": 5,
+            "sort_order": 6,
             "clicks": 0
         },
         {
@@ -67,7 +67,7 @@
             "icon": "instagram",
             "category": "social",
             "live": false,
-            "sort_order": 6,
+            "sort_order": 7,
             "clicks": 0
         },
         {
@@ -87,7 +87,7 @@
             "icon": "discord",
             "category": "social",
             "live": false,
-            "sort_order": 7,
+            "sort_order": 4,
             "clicks": 0
         },
         {
@@ -97,7 +97,7 @@
             "icon": "kofi",
             "category": "support",
             "live": false,
-            "sort_order": 4,
+            "sort_order": 5,
             "clicks": 0
         }
     ],
