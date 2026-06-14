@@ -24,7 +24,8 @@
             "category": "stream",
             "live": true,
             "sort_order": 0,
-            "clicks": 0
+            "clicks": 0,
+            "color": "#8000ff"
         },
         {
             "id": "kick",
