@@ -13,7 +13,7 @@
             "icon": "youtube",
             "category": "social",
             "live": false,
-            "sort_order": 1,
+            "sort_order": 0,
             "clicks": 0,
             "color": "#ff0000"
         },
@@ -97,7 +97,7 @@
             "icon": "kofi",
             "category": "support",
             "live": false,
-            "sort_order": 0,
+            "sort_order": 1,
             "clicks": 0
         }
     ],
