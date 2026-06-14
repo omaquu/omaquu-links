@@ -874,6 +874,8 @@ async function loadAffiliates() {
       <span class="type-badge">AF</span>
       <span class="title">${esc(l.title||l.url)}</span>
       <span class="url">${esc(l.url).slice(0,50)}</span>
+      ${l.price?`<span style="font-size:0.75rem;color:#888">${esc(l.price)}</span>`:''}
+      ${l.description?`<span style="font-size:0.7rem;color:#555;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.description)}</span>`:''}
       <span>${(Array.isArray(l.tags)?l.tags.join(','):(l.tags||'')).split(',').filter(Boolean).map(t=>`<span class="tag-badge" style="cursor:pointer" onclick="addTagToInput('afTags','${esc(t.trim())}')">${esc(t.trim())}</span>`).join('')}</span>
       ${l.youtubeId?`<span style="font-size:0.7rem;color:#ef4444">▶ YT</span>`:''}
       <input type="color" value="${l.color||'#ff6b35'}" style="width:32px;flex:none"

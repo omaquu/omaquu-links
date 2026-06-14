@@ -642,8 +642,17 @@ function renderAffiliates() {
     sorted.forEach(aff => {
         const isHot = hotIds.has(aff.id);
         const features = normalizeTags(aff.features || aff.tags);
-        const tagsHtml = features.map(f => 
+        const maxTags = 4;
+        const visibleTags = features.slice(0, maxTags);
+        const hiddenTags = features.slice(maxTags);
+        const tagsHtml = visibleTags.map(f => 
             `<span class="affiliate-tag" data-tag="${escHtml(f)}" onclick="event.stopPropagation();filterByTag('${escHtml(f)}')">#${escHtml(f)}</span>`
+        ).join('');
+        const moreBtn = hiddenTags.length > 0 
+            ? `<span class="tag-more" onclick="event.stopPropagation();toggleHiddenTags(this, '${aff.id}')">+${hiddenTags.length} lisää...</span>`
+            : '';
+        const hiddenTagsHtml = hiddenTags.map(f => 
+            `<span class="affiliate-tag hidden-tags" data-tag="${escHtml(f)}" data-aff="${aff.id}" onclick="event.stopPropagation();filterByTag('${escHtml(f)}')">#${escHtml(f)}</span>`
         ).join('');
         
         const card = document.createElement('div');
@@ -664,7 +673,7 @@ function renderAffiliates() {
                 <div class="affiliate-title">${escHtml(aff.title)}</div>
                 <div class="affiliate-desc">${escHtml(aff.description || '')}</div>
                 <div class="affiliate-price">${escHtml(aff.price || '')}</div>
-                <div class="affiliate-features">${tagsHtml}</div>
+                <div class="affiliate-features">${tagsHtml}${moreBtn}${hiddenTagsHtml}</div>
                 ${aff.youtubeId ? `<button class="yt-preview-btn" onclick="event.stopPropagation();showYtEmbed('${escHtml(aff.youtubeId)}')"><i data-lucide="play"></i> Katso video</button>` : ''}
                 <a href="${escHtml(aff.url)}" target="_blank" rel="noopener noreferrer" class="affiliate-cta" onclick="event.stopPropagation();trackClick('affiliates','${aff.id}')">
                     <i data-lucide="shopping-cart"></i> Osta nyt
@@ -687,6 +696,12 @@ function normalizeTags(raw) {
     if (Array.isArray(raw)) return raw.map(t => String(t).trim().toLowerCase()).filter(Boolean);
     if (typeof raw === 'string') return raw.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
     return [];
+}
+
+function toggleHiddenTags(el, affId) {
+    const hiddenEls = document.querySelectorAll(`.hidden-tags[data-aff="${affId}"]`);
+    hiddenEls.forEach(tag => tag.classList.toggle('show'));
+    el.style.display = 'none';
 }
 
 // ─── FILTER TAGS (with counts) ────────────────────────────────────────────
