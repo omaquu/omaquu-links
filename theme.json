@@ -7,11 +7,10 @@
     "textPrimary": "#cffafe",
     "textSecondary": "#a5f3fc",
     "bgImage": "",
-    "bgAnimation": "bubbles",
+    "bgAnimation": "aurora-shift",
     "animationColor": "#00bcd4",
     "animationSpeed": "8",
-    "bgGradient1": "",
-    "bgGradient2": "",
-    "bgGradientAngle": "180",
-    "accentGlow": "rgba(0,188,212,0.3)"
+    "bgGradient1": "#000000",
+    "bgGradient2": "#000000",
+    "bgGradientAngle": "180"
 }
