@@ -326,8 +326,14 @@
         </div>
       </div>
       <div class="row">
+        <div class="col"><label>Hinta</label><input id="afPrice" placeholder="€29.99"></div>
         <div class="col"><label>Tagit (comma)</label><input id="afTags" placeholder="tech, kauppa"></div>
+      </div>
+      <div class="row">
         <div class="col"><label>YouTube video ID</label><input id="afYoutube" placeholder="dQw4w9WgXcQ"></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>Selostus</label><textarea id="afDesc" rows="3" placeholder="Tuotteen lyhyt kuvaus..."></textarea></div>
       </div>
       <button class="primary" onclick="addAffiliate()" id="afSaveBtn">Tallenna affiliate</button>
       <button class="small danger hidden" id="afCancelBtn" onclick="cancelEditAffiliate()" style="margin-left:8px">Peruuta</button>
@@ -834,6 +840,8 @@ async function addAffiliate() {
     tags: document.getElementById('afTags').value,
     color: document.getElementById('afColor').value,
     youtubeId: document.getElementById('afYoutube').value,
+    price: document.getElementById('afPrice').value,
+    description: document.getElementById('afDesc').value,
     sort_order: 0,
   };
   if (!p.title || !p.url) return;
@@ -843,7 +851,7 @@ async function addAffiliate() {
   } else {
     await api('/affiliates', {method:'POST', body: JSON.stringify(p)});
   }
-  ['afTitle','afUrl','afImage','afTags','afYoutube'].forEach(i=>document.getElementById(i).value='');
+  ['afTitle','afUrl','afImage','afTags','afYoutube','afPrice','afDesc'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('afColor').value = '#ff6b35';
   document.getElementById('afSaveBtn').textContent = 'Tallenna affiliate';
   document.getElementById('afCancelBtn').classList.add('hidden');
@@ -886,6 +894,8 @@ async function editAffiliate(id) {
   document.getElementById('afTags').value = item.tags || '';
   document.getElementById('afColor').value = item.color || '#ff6b35';
   document.getElementById('afYoutube').value = item.youtubeId || '';
+  document.getElementById('afPrice').value = item.price || '';
+  document.getElementById('afDesc').value = item.description || '';
   document.getElementById('afSaveBtn').textContent = '✏️ Päivitä affiliate';
   document.getElementById('afCancelBtn').classList.remove('hidden');
   window.scrollTo(0, 0);

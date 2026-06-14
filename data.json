@@ -149,10 +149,12 @@
             "image": "//ae01.alicdn.com/kf/Seb57c41048bb4680a2d04c4d453b9746W.jpg_350x350.jpg",
             "tags": "HE, magnetic switch, magnetic, keyboard",
             "color": "#ffff80",
-            "sort_order": 1,
+            "sort_order": 0,
             "id": "8776e1a0",
             "youtubeId": "",
-            "clicks": 0
+            "clicks": 0,
+            "price": "€48",
+            "description": "75% Halvin Magneettinen näppäimistö"
         }
     ],
     "streamAlwaysVisible": false
