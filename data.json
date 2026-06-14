@@ -24,7 +24,7 @@
             "icon": "twitch",
             "category": "stream",
             "live": true,
-            "sort_order": 0,
+            "sort_order": 1,
             "clicks": 0,
             "color": "#8000ff"
         },
@@ -35,7 +35,7 @@
             "icon": "kick",
             "category": "stream",
             "live": true,
-            "sort_order": 1,
+            "sort_order": 0,
             "clicks": 0,
             "color": "#80ff80"
         },
