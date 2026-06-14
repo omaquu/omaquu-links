@@ -36,7 +36,8 @@
             "category": "stream",
             "live": true,
             "sort_order": 4,
-            "clicks": 0
+            "clicks": 0,
+            "color": "#80ff80"
         },
         {
             "id": "tiktok",
