@@ -46,7 +46,7 @@
             "icon": "tiktok",
             "category": "social",
             "live": false,
-            "sort_order": 5,
+            "sort_order": 3,
             "clicks": 0,
             "color": "#000000"
         },
@@ -57,7 +57,7 @@
             "icon": "x",
             "category": "social",
             "live": false,
-            "sort_order": 4,
+            "sort_order": 5,
             "clicks": 0
         },
         {
@@ -97,7 +97,7 @@
             "icon": "kofi",
             "category": "support",
             "live": false,
-            "sort_order": 3,
+            "sort_order": 4,
             "clicks": 0
         }
     ],
