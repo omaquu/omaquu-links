@@ -25,6 +25,9 @@ let siteData = {
 
 let currentTheme = {};
 let activeFilters = new Set();
+let activeCodeFilters = new Set();
+let codesLayout = 'list';
+let shopLayout = 'list';
 let animFrame = null;
 
 // ─── LOAD DATA ────────────────────────────────────────────────────────────
@@ -366,6 +369,7 @@ function renderAll() {
     renderQuickLinks();
     renderLinks();
     renderCodes();
+    renderCodeFilterTags();
     renderAffiliates();
     renderFilterTags();
     lucide.createIcons();
@@ -423,7 +427,7 @@ function renderLinks() {
         const colorStyle = link.color ? `style="--link-accent:${link.color}"` : '';
         
         container.innerHTML += `
-            <a href="${escHtml(link.url)}" class="${cardClass}" ${colorStyle} target="_blank" rel="noopener noreferrer">
+            <a href="${escHtml(link.url)}" class="${cardClass}" ${colorStyle} target="_blank" rel="noopener noreferrer" onclick="trackClick('links','${link.id}')">
                 <div class="link-icon"${link.color ? ` style="background:${link.color}22;color:${link.color}"` : ''}>
                     <i data-lucide="${iconName}"></i>
                 </div>
@@ -441,30 +445,58 @@ function renderLinks() {
 function renderCodes() {
     const container = document.getElementById('codesList');
     container.innerHTML = '';
+    container.className = 'codes-list layout-' + codesLayout;
     
     const sorted = [...(siteData.codes || [])].sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999));
-
+    // HOT: top 2 by clicks
+    const byClicks = [...sorted].sort((a,b) => (b.clicks||0) - (a.clicks||0));
+    const hotIds = new Set();
+    for (let i = 0; i < Math.min(2, byClicks.length); i++) {
+        if ((byClicks[i].clicks||0) > 0) hotIds.add(byClicks[i].id);
+    }
+    
     sorted.forEach(code => {
+        const isHot = hotIds.has(code.id);
         const colorAccent = code.color ? `style="--code-accent:${code.color}"` : '';
-        container.innerHTML += `
-            <div class="code-card" ${colorAccent}>
-                <div class="code-header">
-                    <span class="code-store">${escHtml(code.store || code.title)}</span>
-                    <span class="code-discount"${code.color ? ` style="background:linear-gradient(135deg,${code.color},${code.color}cc)"` : ''}>${escHtml(code.discount || '')} OFF</span>
-                </div>
-                <div class="code-description">${escHtml(code.description || '')}</div>
-                <div class="code-box">
-                    <span class="code-value"${code.color ? ` style="color:${code.color}"` : ''}>${escHtml(code.code)}</span>
-                    <button class="copy-btn" onclick="copyCode('${escHtml(code.code)}', this)"${code.color ? ` style="background:${code.color}"` : ''}>
-                        <i data-lucide="copy"></i> Copy
-                    </button>
-                </div>
-                ${code.url ? `<a href="${escHtml(code.url)}" target="_blank" rel="noopener noreferrer" class="code-link">
-                    <i data-lucide="external-link"></i> Siirry kauppaan
-                </a>` : ''}
+        const codeTags = normalizeTags(code.tags || code.features || '');
+        const tagsHtml = codeTags.map(t =>
+            `<span class="code-tag" onclick="event.stopPropagation();filterCodeByTag('${escHtml(t)}')">#${escHtml(t)}</span>`
+        ).join('');
+        
+        const card = document.createElement('div');
+        card.className = 'code-card compact' + (isHot ? ' hot' : '');
+        card.dataset.tags = JSON.stringify(codeTags);
+        card.dataset.id = code.id;
+        if (code.color) card.style.setProperty('--code-accent', code.color);
+        
+        card.innerHTML = `
+            ${isHot ? '<div class="hot-badge">🔥 HOT</div>' : ''}
+            <div class="code-header">
+                <span class="code-store">${escHtml(code.store || code.title)}</span>
+                <span class="code-discount"${code.color ? ` style="background:linear-gradient(135deg,${code.color},${code.color}cc)"` : ''}>${escHtml(code.discount || '')} OFF</span>
             </div>
+            <div class="code-description">${escHtml(code.description || '')}</div>
+            ${codeTags.length ? `<div class="code-features">${tagsHtml}</div>` : ''}
+            <div class="code-box">
+                <span class="code-value"${code.color ? ` style="color:${code.color}"` : ''}>${escHtml(code.code)}</span>
+                <button class="copy-btn" onclick="event.stopPropagation();copyCode('${escHtml(code.code)}', this)"${code.color ? ` style="background:${code.color}"` : ''}>
+                    <i data-lucide="copy"></i> Copy
+                </button>
+            </div>
+            ${code.url ? `<a href="${escHtml(code.url)}" target="_blank" rel="noopener noreferrer" class="code-link" onclick="event.stopPropagation();trackClick('codes','${code.id}')">
+                <i data-lucide="external-link"></i> Siirry kauppaan
+            </a>` : ''}
+            <div class="code-clicks">${(code.clicks||0)} clicks</div>
         `;
+        
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.copy-btn') || e.target.closest('.code-link') || e.target.closest('.code-tag')) return;
+            showItemPopup(code, 'code');
+        });
+        container.appendChild(card);
     });
+    
+    filterCodes();
 }
 
 function copyCode(code, btn) {
@@ -480,24 +512,148 @@ function copyCode(code, btn) {
     });
 }
 
+// ─── CODE FILTER TAGS ───────────────────────────────────────────────────
+function renderCodeFilterTags() {
+    const container = document.getElementById('codeFilterTags');
+    if (!container) return;
+    const tagCounts = {};
+    siteData.codes.forEach(c => {
+        normalizeTags(c.tags || c.features || []).forEach(t => {
+            tagCounts[t] = (tagCounts[t] || 0) + 1;
+        });
+    });
+    const allTags = Object.keys(tagCounts);
+    if (allTags.length === 0) { container.innerHTML = ''; return; }
+    allTags.sort((a, b) => tagCounts[b] - tagCounts[a]);
+    container.innerHTML = `<span class="filter-tag ${activeCodeFilters.size === 0 ? 'active' : ''}" onclick="clearCodeFilters()">Kaikki</span>` +
+        allTags.map(tag =>
+            `<span class="filter-tag ${activeCodeFilters.has(tag) ? 'active' : ''}" data-tag="${escHtml(tag)}" onclick="toggleCodeFilter('${escHtml(tag)}')">#${escHtml(tag)} <span class="tag-count">(${tagCounts[tag]})</span></span>`
+        ).join('');
+}
+
+function toggleCodeFilter(tag) {
+    if (activeCodeFilters.has(tag)) activeCodeFilters.delete(tag);
+    else activeCodeFilters.add(tag);
+    filterCodes();
+    renderCodeFilterTags();
+}
+
+function clearCodeFilters() {
+    activeCodeFilters.clear();
+    filterCodes();
+    renderCodeFilterTags();
+}
+
+function filterCodeByTag(tag) {
+    activeCodeFilters.clear();
+    activeCodeFilters.add(tag);
+    document.querySelector('[data-tab="codes"]').click();
+    filterCodes();
+    renderCodeFilterTags();
+}
+
+function filterCodes() {
+    const searchVal = document.getElementById('codesSearch')?.value.toLowerCase() || '';
+    const cards = document.querySelectorAll('.code-card');
+    cards.forEach(card => {
+        const tags = JSON.parse(card.dataset.tags || '[]');
+        const text = card.textContent.toLowerCase();
+        const matchesSearch = !searchVal || text.includes(searchVal);
+        const matchesFilters = activeCodeFilters.size === 0 ||
+            Array.from(activeCodeFilters).every(f => tags.includes(f));
+        card.style.display = (matchesSearch && matchesFilters) ? '' : 'none';
+    });
+}
+
+// ─── LAYOUT TOGGLES ──────────────────────────────────────────────────────
+function setCodesLayout(layout) {
+    codesLayout = layout;
+    document.querySelectorAll('#codes .layout-btn').forEach(b => b.classList.toggle('active', b.dataset.layout === layout));
+    document.getElementById('codesList').className = 'codes-list layout-' + layout;
+}
+
+function setShopLayout(layout) {
+    shopLayout = layout;
+    document.querySelectorAll('#affiliates .layout-btn').forEach(b => b.classList.toggle('active', b.dataset.layout === layout));
+    document.getElementById('affiliatesList').className = 'affiliates-grid layout-' + layout;
+}
+
+// ─── POPUP (expanded detail, no page leave) ──────────────────────────────
+function showItemPopup(item, type) {
+    let overlay = document.getElementById('itemPopup');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'itemPopup';
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) { overlay.classList.remove('open'); } });
+        document.body.appendChild(overlay);
+    }
+    
+    trackClick(type + 's', item.id);
+    
+    const isAffiliate = type === 'affiliate';
+    const tags = normalizeTags(item.tags || item.features || []);
+    const tagsHtml = tags.map(t => `<span class="popup-tag">#${escHtml(t)}</span>`).join('');
+    const color = item.color || '';
+    
+    overlay.innerHTML = `<div class="popup-card${color ? ' has-color' : ''}" ${color ? `style="--popup-accent:${color}"` : ''}>
+        <button class="popup-close" onclick="document.getElementById('itemPopup').classList.remove('open')">✕</button>
+        ${item.image ? `<img src="${escHtml(item.image)}" class="popup-image" alt="">` : ''}
+        ${item.isHot || (item.clicks > 0) ? '<div class="popup-hot">🔥 HOT</div>' : ''}
+        <h2 class="popup-title">${escHtml(item.title || item.store)}</h2>
+        ${item.description ? `<p class="popup-desc">${escHtml(item.description)}</p>` : ''}
+        ${item.discount ? `<div class="popup-discount"${color ? ` style="background:${color}"` : ''}>${escHtml(item.discount)} OFF</div>` : ''}
+        ${item.price ? `<div class="popup-price">${escHtml(item.price)}</div>` : ''}
+        ${tags.length ? `<div class="popup-tags">${tagsHtml}</div>` : ''}
+        ${item.code ? `<div class="popup-code-box">
+            <span class="popup-code-value"${color ? ` style="color:${color}"` : ''}>${escHtml(item.code)}</span>
+            <button class="copy-btn popup-copy"${color ? ` style="background:${color}"` : ''} onclick="copyCode('${escHtml(item.code)}', this)">
+                <i data-lucide="copy"></i> Copy
+            </button>
+        </div>` : ''}
+        ${item.url ? `<a href="${escHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="popup-cta"${color ? ` style="background:${color}"` : ''}>
+            ${isAffiliate ? '<i data-lucide="shopping-cart"></i> Osta nyt' : '<i data-lucide="external-link"></i> Siirry kauppaan'}
+        </a>` : ''}
+        ${item.youtubeId ? `<button class="popup-yt" onclick="showYtEmbed('${escHtml(item.youtubeId)}')"><i data-lucide="play"></i> Katso video</button>` : ''}
+        <div class="popup-clicks">${(item.clicks||0)} clicks</div>
+    </div>`;
+    overlay.classList.add('open');
+    lucide.createIcons();
+}
+
+// ─── CLICK TRACKING ──────────────────────────────────────────────────────
+function trackClick(type, id) {
+    fetch('/api/click/' + type + '/' + id, { method: 'POST' }).catch(() => {});
+}
+
 // ─── SHOP / AFFILIATES ────────────────────────────────────────────────────
 function renderAffiliates() {
     const container = document.getElementById('affiliatesList');
     container.innerHTML = '';
+    container.className = 'affiliates-grid layout-' + shopLayout;
     
     const sorted = [...(siteData.affiliates || [])].sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999));
+    // HOT: top 2 by clicks
+    const byClicks = [...sorted].sort((a,b) => (b.clicks||0) - (a.clicks||0));
+    const hotIds = new Set();
+    for (let i = 0; i < Math.min(2, byClicks.length); i++) {
+        if ((byClicks[i].clicks||0) > 0) hotIds.add(byClicks[i].id);
+    }
 
     sorted.forEach(aff => {
+        const isHot = hotIds.has(aff.id);
         const features = normalizeTags(aff.features || aff.tags);
         const tagsHtml = features.map(f => 
-            `<span class="affiliate-tag" data-tag="${escHtml(f)}" onclick="filterByTag('${escHtml(f)}')">#${escHtml(f)}</span>`
+            `<span class="affiliate-tag" data-tag="${escHtml(f)}" onclick="event.stopPropagation();filterByTag('${escHtml(f)}')">#${escHtml(f)}</span>`
         ).join('');
         
         const card = document.createElement('div');
-        card.className = 'affiliate-card';
+        card.className = 'affiliate-card compact' + (isHot ? ' hot' : '');
+        // Color is set as CSS custom prop but NOT applied visually except on hover
         if (aff.color) card.style.setProperty('--link-accent', aff.color);
         card.dataset.tags = JSON.stringify(features);
+        card.dataset.id = aff.id;
         card.innerHTML = `
+            ${isHot ? '<div class="hot-badge">🔥 HOT</div>' : ''}
             ${aff.image ? `
             <div class="affiliate-image-wrap">
                 <img src="${escHtml(aff.image)}" alt="${escHtml(aff.title)}" class="affiliate-image" loading="lazy">
@@ -509,16 +665,22 @@ function renderAffiliates() {
                 <div class="affiliate-desc">${escHtml(aff.description || '')}</div>
                 <div class="affiliate-price">${escHtml(aff.price || '')}</div>
                 <div class="affiliate-features">${tagsHtml}</div>
-                ${aff.youtubeId ? `<button class="yt-preview-btn" onclick="event.stopPropagation();showYtEmbed('${escHtml(aff.youtubeId)}')">▶ Katso video</button>` : ''}
-                <a href="${escHtml(aff.url)}" target="_blank" rel="noopener noreferrer" class="affiliate-cta"${aff.color ? ` style="background:${aff.color}"` : ''} onclick="event.stopPropagation()">
+                ${aff.youtubeId ? `<button class="yt-preview-btn" onclick="event.stopPropagation();showYtEmbed('${escHtml(aff.youtubeId)}')"><i data-lucide="play"></i> Katso video</button>` : ''}
+                <a href="${escHtml(aff.url)}" target="_blank" rel="noopener noreferrer" class="affiliate-cta" onclick="event.stopPropagation();trackClick('affiliates','${aff.id}')">
                     <i data-lucide="shopping-cart"></i> Osta nyt
                 </a>
+                <div class="affiliate-clicks">${(aff.clicks||0)} clicks</div>
             </div>
         `;
         
-        card.addEventListener('click', () => window.open(aff.url, '_blank'));
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.affiliate-cta') || e.target.closest('.affiliate-tag') || e.target.closest('.yt-preview-btn') || e.target.closest('.yt-play-overlay')) return;
+            showItemPopup({...aff, isHot}, 'affiliate');
+        });
         container.appendChild(card);
     });
+    
+    filterShop();
 }
 
 function normalizeTags(raw) {

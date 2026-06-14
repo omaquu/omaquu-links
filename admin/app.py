@@ -11,6 +11,26 @@ _dotenv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
 load_dotenv(_dotenv_path)
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
+
+# ─── Serve public linksite ───────────────────────────────────────────────
+import os as _os
+_PUBLIC_DIR = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), '')
+
+@app.route('/public')
+@app.route('/p')
+def public_page():
+    return send_from_file(_PUBLIC_DIR, 'index.html')
+
+@app.route('/<path:filename>')
+def public_static(filename):
+    # Serve public site files (style.css, script.js etc.)
+    if filename in ('style.css', 'script.js', 'favicon.ico'):
+        return send_from_file(_PUBLIC_DIR, filename)
+    return app.send_static_file(filename)
+
+def send_from_file(directory, filename):
+    from flask import send_file
+    return send_file(_os.path.join(directory, filename))
 BASE_DIR      = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE     = os.path.join(BASE_DIR, '..', 'data.json')
 THEME_FILE    = os.path.join(BASE_DIR, '..', 'theme.json')
@@ -305,6 +325,30 @@ def stream_always():
     d['streamAlwaysVisible'] = bool(request.json.get('streamAlwaysVisible',False))
     write_data(d); _git_push("Update stream visibility")
     return jsonify({"status":"ok"})
+
+# ─── Click tracking (public, no auth) ──────────────────────────────────────
+@app.route('/api/click/<item_type>/<item_id>', methods=['POST'])
+def track_click(item_type, item_id):
+    if item_type not in ('links','codes','affiliates'): return jsonify({'error':'Invalid type'}),400
+    d = read_data()
+    items = d.get(item_type, [])
+    for item in items:
+        if item.get('id') == item_id:
+            item['clicks'] = item.get('clicks',0) + 1
+            write_data(d)
+            return jsonify({'status':'ok','clicks':item['clicks']})
+    return jsonify({'error':'Not found'}),404
+
+@app.route('/api/hot/<item_type>')
+def get_hot(item_type):
+    """Return items sorted by clicks desc, top 2 get isHot=true"""
+    if item_type not in ('codes','affiliates'): return jsonify({'error':'Invalid type'}),400
+    d = read_data()
+    items = d.get(item_type,[])
+    sorted_items = sorted(items, key=lambda x: x.get('clicks',0), reverse=True)
+    for i, item in enumerate(sorted_items):
+        item['isHot'] = (i < 2 and item.get('clicks',0) > 0)
+    return jsonify(sorted_items)
 
 # ─── Theme + 10 presets ───────────────────────────────────────────────────
 @app.route('/api/theme')

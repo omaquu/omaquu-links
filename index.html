@@ -68,6 +68,18 @@
 
             <!-- Codes Tab -->
             <section class="tab-content" id="codes">
+                <div class="shop-controls">
+                    <div class="search-bar">
+                        <i data-lucide="search" class="search-icon"></i>
+                        <input type="text" id="codesSearch" placeholder="Hae koodeja..." oninput="filterCodes()">
+                    </div>
+                    <div class="filter-tags" id="codeFilterTags"></div>
+                    <div class="layout-toggle">
+                        <button class="layout-btn active" data-layout="list" onclick="setCodesLayout('list')"><i data-lucide="list"></i></button>
+                        <button class="layout-btn" data-layout="grid-2" onclick="setCodesLayout('grid-2')"><i data-lucide="grid-2x2"></i></button>
+                        <button class="layout-btn" data-layout="grid-3" onclick="setCodesLayout('grid-3')"><i data-lucide="grid-3x3"></i></button>
+                    </div>
+                </div>
                 <div class="codes-list" id="codesList"></div>
             </section>
 
@@ -79,6 +91,11 @@
                         <input type="text" id="shopSearch" placeholder="Hae tuotteita..." oninput="filterShop()">
                     </div>
                     <div class="filter-tags" id="filterTags"></div>
+                    <div class="layout-toggle">
+                        <button class="layout-btn active" data-layout="list" onclick="setShopLayout('list')"><i data-lucide="list"></i></button>
+                        <button class="layout-btn" data-layout="grid-2" onclick="setShopLayout('grid-2')"><i data-lucide="grid-2x2"></i></button>
+                        <button class="layout-btn" data-layout="grid-3" onclick="setShopLayout('grid-3')"><i data-lucide="grid-3x3"></i></button>
+                    </div>
                 </div>
                 <div class="affiliates-grid" id="affiliatesList"></div>
                 <div class="no-results" id="noResults" style="display:none;">
