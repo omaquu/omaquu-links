@@ -58,7 +58,8 @@
             "category": "social",
             "live": false,
             "sort_order": 6,
-            "clicks": 0
+            "clicks": 0,
+            "color": "#000000"
         },
         {
             "id": "instagram",
