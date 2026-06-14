@@ -258,8 +258,8 @@ body {
 .link-card[style*="--link-accent"]:hover { border-color: var(--link-accent); }
 .link-card[style*="--link-accent"]::before { background: var(--link-accent); }
 
-.link-card.stream:hover { border-color: var(--live); }
-.link-card.stream::before { background: var(--live); }
+.link-card.stream:hover { border-color: var(--link-accent); }
+.link-card.stream::before { background: var(--link-accent); }
 .link-card.support:hover { border-color: var(--success); }
 .link-card.support::before { background: var(--success); }
 

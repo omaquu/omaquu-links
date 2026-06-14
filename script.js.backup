@@ -315,97 +315,39 @@
    315|        }
    316|        drawAurora();
    317|
-    } else if (type === 'ufo') {
-        // UFO with floating orbs
-        const ufoBaseY = canvas.height * 0.3;
-        const ufo = {
-            x: canvas.width * 0.5,
-            y: ufoBaseY,
-            radius: 80,
-            height: 30,
-            dx: (Math.random() - 0.5) * 0.3,
-            dy: 0
-        };
-        const orbs = Array.from({length: 5}, () => ({
-            angle: Math.random() * Math.PI * 2,
-            distance: Math.random() * 60 + 20,
-            speed: (Math.random() * 0.02 + 0.005) * (Math.random() > 0.5 ? 1 : -1),
-            size: Math.random() * 4 + 2,
-            brightness: Math.random() * 0.5 + 0.5
-        }));
-        let time = 0;
-        function drawUFO() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            time += 0.016;
-            
-            // Update UFO position with slight drift
-            ufo.x += ufo.dx;
-            ufo.y += ufo.dy;
-            if (ufo.x < -ufo.radius) ufo.x = canvas.width + ufo.radius;
-            if (ufo.x > canvas.width + ufo.radius) ufo.x = -ufo.radius;
-            if (ufo.y < ufoBaseY - 20) ufo.y = ufoBaseY - 20;
-            if (ufo.y > ufoBaseY + 20) ufo.y = ufoBaseY + 20;
-            
-            // Draw UFO body (oval)
-            ctx.beginPath();
-            ctx.ellipse(ufo.x, ufo.y, ufo.radius, ufo.height, 0, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(30, 30, 40, 0.8)`;
-            ctx.fill();
-            ctx.strokeStyle = `rgba(${r},${g},${b},0.6)`;
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            
-            // UFO dome
-            ctx.beginPath();
-            ctx.ellipse(ufo.x, ufo.y - ufo.height * 0.4, ufo.radius * 0.8, ufo.height * 0.6, 0, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(${r},${g},${b},0.3)`;
-            ctx.fill();
-            ctx.strokeStyle = `rgba(${r},${g},${b},0.4)`;
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-            
-            // Orbiting orbs
-            orbs.forEach(orb => {
-                orb.angle += orb.speed;
-                const orbX = ufo.x + Math.cos(orb.angle) * orb.distance;
-                const orbY = ufo.y + Math.sin(orb.angle) * orb.distance;
-                
-                // Outer glow
-                ctx.beginPath();
-                ctx.arc(orbX, orbY, orb.size * 1.5, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(${r},${g},${b},${orb.brightness * 0.3})`;
-                ctx.fill();
-                
-                // Orb core
-                ctx.beginPath();
-                ctx.arc(orbX, orbY, orb.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(${r},${g},${b},${orb.brightness})`;
-                ctx.fill();
-                
-                // Occasionally emit a particle
-                if (Math.random() < 0.02) {
-                    // This would need a particle system - for now just a quick glow
-                    ctx.beginPath();
-                    ctx.arc(orbX, orbY, orb.size * 2, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(${r},${g},${b},${orb.brightness * 0.2})`;
-                    ctx.fill();
-                }
-            });
-            
-            // Occasional scan line
-            if (Math.sin(time * 10) > 0.95) {
-                ctx.beginPath();
-                ctx.moveTo(ufo.x - ufo.radius * 0.8, ufo.y);
-                ctx.lineTo(ufo.x + ufo.radius * 0.8, ufo.y);
-                ctx.strokeStyle = `rgba(${r},${g},${b},0.5)`;
-                ctx.lineWidth = 1;
-                ctx.stroke();
-            }
-            
-            animFrame = requestAnimationFrame(drawUFO);
-        }
-        drawUFO();
-    }
+   318|    } else if (type === 'galaxy') {
+   319|        // Swirling galaxy dots
+   320|        const dots = Array.from({length: 200}, () => ({
+   321|            angle: Math.random() * Math.PI * 2,
+   322|            dist: Math.random() * Math.min(canvas.width, canvas.height) * 0.4 + 20,
+   323|            speed: (Math.random() * 0.002 + 0.0005) * (Math.random() > 0.5 ? 1 : -1),
+   324|            size: Math.random() * 2 + 0.5,
+   325|            alpha: Math.random() * 0.5 + 0.1
+   326|        }));
+   327|        const cx = canvas.width / 2, cy = canvas.height / 2;
+   328|        function drawGalaxy() {
+   329|            ctx.clearRect(0, 0, canvas.width, canvas.height);
+   330|            dots.forEach(d => {
+   331|                const x = cx + Math.cos(d.angle) * d.dist;
+   332|                const y = cy + Math.sin(d.angle) * d.dist * 0.6;
+   333|                ctx.beginPath();
+   334|                ctx.arc(x, y, Math.max(0.3, d.size), 0, Math.PI * 2);
+   335|                ctx.fillStyle = `rgba(${r},${g},${b},${d.alpha})`;
+   336|                ctx.fill();
+   337|                d.angle += d.speed;
+   338|            });
+   339|            // Center glow
+   340|            const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 60);
+   341|            grad.addColorStop(0, `rgba(${r},${g},${b},0.08)`);
+   342|            grad.addColorStop(1, 'transparent');
+   343|            ctx.fillStyle = grad;
+   344|            ctx.fillRect(cx - 60, cy - 60, 120, 120);
+   345|            animFrame = requestAnimationFrame(drawGalaxy);
+   346|        }
+   347|        drawGalaxy();
+   348|    }
+   349|}
+   350|
    351|// ─── EMBED AUTO-DETECT ────────────────────────────────────────────────────
    352|function detectEmbedFromUrl(url) {
    353|    if (!url) return null;
