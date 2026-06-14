@@ -14,7 +14,8 @@
             "category": "social",
             "live": false,
             "sort_order": 1,
-            "clicks": 0
+            "clicks": 0,
+            "color": "#ff0000"
         },
         {
             "id": "twitch",
