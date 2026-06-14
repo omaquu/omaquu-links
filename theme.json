@@ -10,8 +10,7 @@
     "bgAnimation": "fire",
     "animationColor": "#ff4500",
     "animationSpeed": "8",
-    "bgGradient1": "",
-    "bgGradient2": "",
-    "bgGradientAngle": "180",
-    "accentGlow": "rgba(255,69,0,0.3)"
+    "bgGradient1": "#000000",
+    "bgGradient2": "#000000",
+    "bgGradientAngle": "180"
 }
