@@ -17,5 +17,5 @@
         "borderRadius": "10px",
         "shadow": "0 4px 8px rgba(0,0,0,0.3)"
     },
-    "intro": "fade"
+    "intro": "slide"
 }
