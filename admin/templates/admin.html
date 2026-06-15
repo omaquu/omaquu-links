@@ -444,6 +444,8 @@
             <option value="galaxy">Galaksi</option>
             <option value="gradient-shift">Gradientti-shiftaus</option>
             <option value="aurora-shift">Aurora-shiftaus</option>
+            <option value="ufo">UFO</option>
+            <option value="cyberpunk">Cyberpunk</option>
           </select>
         </div>
         <div class="col"><label>Gradient kulma (0-360°)</label><input type="number" id="tGradAngle" value="180" min="0" max="360" onchange="saveTheme();updateThemePreview()"></div>
@@ -1019,7 +1021,7 @@ async function loadPresets() {
   const presets = await api('/theme/presets').catch(()=>({}));
   const grid = document.getElementById('presetGrid');
   const names = {orange:'🍊 Orange', purple:'💜 Purple', matrix:'🟢 Matrix', stars:'⭐ Stars', midnight:'🌙 Midnight', neon:'⚡ Neon', fire:'🔥 Fire', ocean:'🌊 Ocean', aurora:'🌌 Aurora', galaxy:'🌌 Galaxy', default:'💗 Default', 'x-files':'🟢 X-Files', 'autumn-forest':'🍂 Autumn', cyberpunk:'💜 Cyber'};
-  const simpleNames = {orange:'Orange', purple:'Purple', matrix:'Matrix', stars:'Stars', midnight:'Midnight', neon:'Neon', fire:'Fire', ocean:'Ocean', aurora:'Aurora', galaxy:'Galaxy', default:'Default', 'x-files':'X-Files', 'autumn-forest':'Autumn Forest', cyberpunk:'Cyberpunk'};
+            'ufo': 'UFO',            'cyberpunk': 'Cyberpunk',  const simpleNames = {orange:'Orange', purple:'Purple', matrix:'Matrix', stars:'Stars', midnight:'Midnight', neon:'Neon', fire:'Fire', ocean:'Ocean', aurora:'Aurora', galaxy:'Galaxy', default:'Default', 'x-files':'X-Files', 'autumn-forest':'Autumn Forest', cyberpunk:'Cyberpunk'};
   grid.innerHTML = Object.entries(presets).map(([k,v]) => `
     <div class="preset" onclick="applyPreset('${k}')" title="${simpleNames[k]||k}\nAccent: ${v.accent}\nTausta: ${v.bgPrimary}\nKortti: ${v.bgCard}\nAnimaatio: ${v.bgAnimation||'Ei'}" style="background:${v.bgPrimary};color:${v.textPrimary||'#fff'}">
       <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
