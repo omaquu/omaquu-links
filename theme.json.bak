@@ -1,0 +1,16 @@
+{
+    "accent": "#ec4899",
+    "bgPrimary": "#0a0510",
+    "bgSecondary": "#12081a",
+    "bgCard": "#1a0e26",
+    "bgCardHover": "#22142e",
+    "textPrimary": "#fce7f3",
+    "textSecondary": "#f9a8d4",
+    "bgImage": "",
+    "bgAnimation": "aurora",
+    "animationColor": "#ec4899",
+    "animationSpeed": "8",
+    "bgGradient1": "#000000",
+    "bgGradient2": "#000000",
+    "bgGradientAngle": "180"
+}

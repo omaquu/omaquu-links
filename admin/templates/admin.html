@@ -990,6 +990,9 @@ async function loadTheme() {
   setTimeout(updateThemePreview, 200);
 }
 function themePayload() {
+  const cr = document.getElementById('tCardRadius').value + 'px';
+  const cs = document.getElementById('tCardShadow').value;
+  const intr = document.getElementById('tIntro').value;
   return {
     accent:         hex('tAccent'),
     bgPrimary:      hex('tBg1'),
@@ -1004,10 +1007,9 @@ function themePayload() {
     animationSpeed: document.getElementById('tAnimSpeed').value || '8',
     bgGradient1:    hex('tGrad1'),
     bgGradient2:    hex('tGrad2'),
-    bgGradientAngle: document.getElementById('tGradAngle').value || '180',    bgCardRadius: cr,
-    bgCardShadow: cs,
-    intro: intr,
-
+    bgGradientAngle: document.getElementById('tGradAngle').value || '180',
+    cardStyle: { borderRadius: cr, shadow: cs },
+    intro: intr
   };
 }
 async function saveTheme() {
@@ -1016,8 +1018,8 @@ async function saveTheme() {
 async function loadPresets() {
   const presets = await api('/theme/presets').catch(()=>({}));
   const grid = document.getElementById('presetGrid');
-  const names = {orange:'🍊 Orange', purple:'💜 Purple', matrix:'🟢 Matrix', stars:'⭐ Stars', midnight:'🌙 Midnight', neon:'⚡ Neon', fire:'🔥 Fire', ocean:'🌊 Ocean', aurora:'🌌 Aurora', galaxy:'🌌 Galaxy'};
-  const simpleNames = {orange:'Orange', purple:'Purple', matrix:'Matrix', stars:'Stars', midnight:'Midnight', neon:'Neon', fire:'Fire', ocean:'Ocean', aurora:'Aurora', galaxy:'Galaxy'};
+  const names = {orange:'🍊 Orange', purple:'💜 Purple', matrix:'🟢 Matrix', stars:'⭐ Stars', midnight:'🌙 Midnight', neon:'⚡ Neon', fire:'🔥 Fire', ocean:'🌊 Ocean', aurora:'🌌 Aurora', galaxy:'🌌 Galaxy', default:'💗 Default', 'x-files':'🟢 X-Files', 'autumn-forest':'🍂 Autumn', cyberpunk:'💜 Cyber'};
+  const simpleNames = {orange:'Orange', purple:'Purple', matrix:'Matrix', stars:'Stars', midnight:'Midnight', neon:'Neon', fire:'Fire', ocean:'Ocean', aurora:'Aurora', galaxy:'Galaxy', default:'Default', 'x-files':'X-Files', 'autumn-forest':'Autumn Forest', cyberpunk:'Cyberpunk'};
   grid.innerHTML = Object.entries(presets).map(([k,v]) => `
     <div class="preset" onclick="applyPreset('${k}')" title="${simpleNames[k]||k}\nAccent: ${v.accent}\nTausta: ${v.bgPrimary}\nKortti: ${v.bgCard}\nAnimaatio: ${v.bgAnimation||'Ei'}" style="background:${v.bgPrimary};color:${v.textPrimary||'#fff'}">
       <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
@@ -1081,6 +1083,9 @@ function updateThemePreview() {
   const ch  = get('tCardH')   || '#22222e';
   const tx  = get('tTxt')     || '#ffffff';
   const an  = get('tAnimType')|| '';
+  const cr  = (get('tCardRadius') || '10') + 'px';
+  const cs  = get('tCardShadow') || '0 4px 8px rgba(0,0,0,0.3)';
+  const intr = get('tIntro') || 'fade';
 
   const elBg = document.getElementById('prevBg');
   if (elBg) {
