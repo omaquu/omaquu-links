@@ -315,76 +315,36 @@ function startBgAnimation(type, color) {
         }
         drawAurora();
 
-    } else if (type === 'ufo' || type === 'galaxy') {
-        // UFO/X-Files animation — floating UFO with orbiting orbs
-        const cx = canvas.width / 2, cy2 = canvas.height * 0.15;
-        let ufoY = cy2;
-        let ufoAngle = 0;
-        function drawUFO() {
+    } else if (type === 'galaxy') {
+        // Swirling galaxy dots
+        const dots = Array.from({length: 200}, () => ({
+            angle: Math.random() * Math.PI * 2,
+            dist: Math.random() * Math.min(canvas.width, canvas.height) * 0.4 + 20,
+            speed: (Math.random() * 0.002 + 0.0005) * (Math.random() > 0.5 ? 1 : -1),
+            size: Math.random() * 2 + 0.5,
+            alpha: Math.random() * 0.5 + 0.1
+        }));
+        const cx = canvas.width / 2, cy = canvas.height / 2;
+        function drawGalaxy() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ufoAngle += 0.003;
-            ufoY = cy2 + Math.sin(ufoAngle * 2) * 8;
-
-            // --- Starfield background ---
-            for (let i = 0; i < 120; i++) {
-                const sx = (i * 137.5 + Math.sin(i * 0.3) * 50) % canvas.width;
-                const sy = (i * 89.3 + Math.cos(i * 0.7) * 40) % canvas.height;
-                const sb = 0.1 + 0.4 * (0.5 + 0.5 * Math.sin(i + ufoAngle * 3));
-                ctx.fillStyle = `rgba(255,255,255,${sb})`;
-                ctx.fillRect(sx, sy, 1.2, 1.2);
-            }
-
-            // --- Orbiting orbs around UFO ---
-            const orbs = 5;
-            for (let i = 0; i < orbs; i++) {
-                const orbAngle = ufoAngle * 1.5 + (i / orbs) * Math.PI * 2;
-                const ox = cx + Math.cos(orbAngle) * 55;
-                const oy = ufoY + Math.sin(orbAngle) * 35 * 0.6;
-                const orbSize = 2 + Math.sin(orbAngle + ufoAngle) * 1;
-                const hue = (i * 60 + ufoAngle * 30) % 360;
+            dots.forEach(d => {
+                const x = cx + Math.cos(d.angle) * d.dist;
+                const y = cy + Math.sin(d.angle) * d.dist * 0.6;
                 ctx.beginPath();
-                ctx.arc(ox, oy, Math.max(1, orbSize), 0, Math.PI * 2);
-                ctx.fillStyle = `hsl(${hue},80%,${60 + Math.sin(orbAngle + ufoAngle) * 20}%)`;
+                ctx.arc(x, y, Math.max(0.3, d.size), 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${r},${g},${b},${d.alpha})`;
                 ctx.fill();
-            }
-
-            // --- UFO body (classic saucer shape) ---
-            const ufoW = 60, ufoH = 14;
-            ctx.save();
-            ctx.translate(cx, ufoY);
-
-            // Dome (glass cockpit)
-            ctx.beginPath();
-            ctx.ellipse(0, -ufoH * 0.3, ufoW * 0.2, ufoH * 0.8, 0, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(${r},${g},${b},0.3)`;
-            ctx.fill();
-            ctx.strokeStyle = `rgba(${r},${g},${b},0.6)`;
-            ctx.lineWidth = 1;
-            ctx.stroke();
-
-            // Saucer body
-            ctx.beginPath();
-            ctx.ellipse(0, 0, ufoW, ufoH, 0, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(100,100,120,0.6)`;
-            ctx.fill();
-            ctx.strokeStyle = `rgba(${r},${g},${b},0.5)`;
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-
-            // Bottom glow
-            const glow = ctx.createRadialGradient(0, ufoH * 0.5, 0, 0, ufoH * 0.5, ufoW * 0.6);
-            glow.addColorStop(0, `rgba(${r},${g},${b},0.12)`);
-            glow.addColorStop(1, 'transparent');
-            ctx.fillStyle = glow;
-            ctx.beginPath();
-            ctx.ellipse(0, ufoH * 0.5, ufoW * 0.5, ufoH * 0.4, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.restore();
-
-            animFrame = requestAnimationFrame(drawUFO);
+                d.angle += d.speed;
+            });
+            // Center glow
+            const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 60);
+            grad.addColorStop(0, `rgba(${r},${g},${b},0.08)`);
+            grad.addColorStop(1, 'transparent');
+            ctx.fillStyle = grad;
+            ctx.fillRect(cx - 60, cy - 60, 120, 120);
+            animFrame = requestAnimationFrame(drawGalaxy);
         }
-        drawUFO();
+        drawGalaxy();
     }
 }
 

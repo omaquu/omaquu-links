@@ -94,7 +94,7 @@ def _git_push(msg="Update omaquu-links via admin"):
         if subprocess.run(['git','diff','--cached','--quiet'], cwd=REPO_DIR).returncode == 0:
             return {"status": "ok", "pushed": False}
         subprocess.run(['git','commit','-m',msg], cwd=REPO_DIR, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.run(['git','push','origin','master'], cwd=REPO_DIR, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(['git','push',remote,'master'], cwd=REPO_DIR, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return {"status": "ok", "pushed": True}
     except Exception as e: return {"status": "error", "message": str(e)}
 
