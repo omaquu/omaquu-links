@@ -14,9 +14,9 @@
     "bgGradient2": "",
     "bgGradientAngle": "180",
     "cardStyle": {
-        "borderRadius": "10px",
-        "shadow": "0 4px 8px rgba(0,0,0,0.3)"
+        "borderRadius": "12px",
+        "shadow": "0 4px 12px rgba(0,0,0,0.4)"
     },
-    "intro": "slide",
+    "intro": "fade",
     "accentGlow": "rgba(16,185,129,0.3)"
 }
