@@ -359,6 +359,141 @@ function startBgAnimation(type, color) {
         }
         drawGalaxy();
     }
+    } else if (type === 'ufo') {
+        // UFO with beam
+        let ufoX = canvas.width * 0.25;
+        let ufoY = canvas.height * 0.3;
+        const ufoSpeed = 0.5;
+        const beamWidth = 80;
+        const beamHeight = 120;
+        
+        function drawUFO() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Move UFO horizontally
+            ufoX += ufoSpeed;
+            if (ufoX > canvas.width + 100) ufoX = -100;
+            
+            // Draw beam
+            ctx.fillStyle = `rgba(${r},${g},${b},0.2)`;
+            ctx.beginPath();
+            ctx.moveTo(ufoX + 24, ufoY + 24);  // Bottom center of UFO
+            ctx.lineTo(ufoX - beamWidth/2, ufoY + beamHeight);  // Bottom left
+            ctx.lineTo(ufoX + beamWidth/2, ufoY + beamHeight);  // Bottom right
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw UFO body
+            ctx.fillStyle = `rgba(${r},${g},${b},0.8)`;
+            ctx.beginPath();
+            ctx.ellipse(ufoX + 24, ufoY + 24, 30, 12, 0, 0, Math.PI * 2);  // Main body
+            ctx.fill();
+            
+            // UFO dome
+            ctx.fillStyle = `rgba(${(r+100)%255},${(g+100)%255},${(b+100)%255},0.9)`;
+            ctx.beginPath();
+            ctx.arc(ufoX + 24, ufoY + 12, 20, 8, 0, Math.PI, false);  // Dome
+            ctx.lineTo(ufoX + 44, ufoY + 12);
+            ctx.closePath();
+            ctx.fill();
+            
+            // UFO lights
+            ctx.fillStyle = '#ff0';
+            ctx.beginPath();
+            ctx.arc(ufoX + 12, ufoY + 24, 3, 0, Math.PI * 2);  // Left light
+            ctx.arc(ufoX + 36, ufoY + 24, 3, 0, Math.PI * 2);  // Right light
+            ctx.fill();
+            
+            animFrame = requestAnimationFrame(drawUFO);
+        }
+        drawUFO();
+
+    } else if (type === 'cyberpunk') {
+        // Cyberpunk glitch and neon
+        const glitchOffset = 4;
+        let time = 0;
+        const lines = [];
+        for (let i = 0; i < 20; i++) {
+            lines.push({
+                x1: Math.random() * canvas.width,
+                y1: Math.random() * canvas.height * 0.3,
+                x2: Math.random() * canvas.width,
+                y2: Math.random() * canvas.height * 0.3 + canvas.height * 0.7,
+                width: Math.random() * 2 + 1,
+                speed: Math.random() * 0.01 + 0.005,
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+        const glitches = [];
+        for (let i = 0; i < 8; i++) {
+            glitches.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                w: Math.random() * 60 + 20,
+                h: Math.random() * 20 + 5,
+                speed: Math.random() * 0.02 + 0.005,
+                offset: Math.random() * 100,
+                colorShift: Math.random() > 0.5
+            });
+        }
+        
+        function drawCyberpunk() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            time += 0.016;
+            
+            // Draw neon lines
+            ctx.lineCap = 'round';
+            lines.forEach(line => {
+                ctx.strokeStyle = `rgba(${r},${g},${b},0.4)`;
+                ctx.lineWidth = line.width;
+                ctx.beginPath();
+                ctx.moveTo(line.x1, line.y1);
+                ctx.lineTo(line.x2, line.y2);
+                ctx.stroke();
+                
+                // Add pulsing
+                const pulse = 0.3 + 0.7 * Math.sin(time * line.speed * 100 + line.phase);
+                ctx.strokeStyle = `rgba(${r},${g},${b},${0.2 + 0.6 * pulse})`;
+                ctx.lineWidth = line.width * (0.5 + pulse * 0.5);
+                ctx.beginPath();
+                ctx.moveTo(line.x1, line.y1);
+                ctx.lineTo(line.x2, line.y2);
+                ctx.stroke();
+            });
+            
+            // Draw occasional glitches
+            if (Math.random() < 0.02) {
+                const g = glitches[Math.floor(Math.random() * glitches.length)];
+                ctx.fillStyle = g.colorShift ? 
+                    `rgba(${(b+100)%255},${(r+100)%255},${(g+100)%255},0.3)` :
+                    `rgba(${(r+100)%255},${(g+100)%255},${(b+100)%255},0.3)`;
+                ctx.fillRect(g.x, g.y, g.w, g.h);
+                
+                // Glitch offset lines
+                for (let i = 0; i < 3; i++) {
+                    const offset = (Math.random() - 0.5) * glitchOffset;
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(g.x + offset, g.y + (i * g.h / 2));
+                    ctx.lineTo(g.x + g.w + offset, g.y + (i * g.h / 2));
+                    ctx.stroke();
+                }
+            }
+            
+            // Scan lines
+            ctx.strokeStyle = `rgba(0,0,0,0.1)`;
+            for (let y = 0; y < canvas.height; y += 4) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            animFrame = requestAnimationFrame(drawCyberpunk);
+        }
+        drawCyberpunk();
+
 }
 
 // ─── EMBED AUTO-DETECT ────────────────────────────────────────────────────
