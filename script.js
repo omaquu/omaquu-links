@@ -69,6 +69,19 @@ function applyTheme(theme) {
         if (theme[key]) root.style.setProperty(cssVar, theme[key]);
     });
 
+    // cardStyle: borderRadius + shadow
+    if (theme.cardStyle) {
+        if (theme.cardStyle.borderRadius)
+            root.style.setProperty('--card-radius', theme.cardStyle.borderRadius);
+        if (theme.cardStyle.shadow)
+            root.style.setProperty('--card-shadow', theme.cardStyle.shadow);
+    }
+
+    // Intro animation
+    if (theme.intro) {
+        document.body.setAttribute('data-intro', theme.intro);
+    }
+
     // Background image
     const bgOverlay = document.getElementById('bgImageOverlay');
     if (bgOverlay) {

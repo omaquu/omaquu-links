@@ -1,5 +1,7 @@
 {
+    "_comment": "omaquu-links default theme",
     "accent": "#ec4899",
+    "accentGlow": "rgba(236,72,153,0.3)",
     "bgPrimary": "#0a0510",
     "bgSecondary": "#12081a",
     "bgCard": "#1a0e26",
@@ -10,7 +12,12 @@
     "bgAnimation": "aurora",
     "animationColor": "#ec4899",
     "animationSpeed": "8",
-    "bgGradient1": "#000000",
-    "bgGradient2": "#000000",
-    "bgGradientAngle": "180"
+    "bgGradient1": "",
+    "bgGradient2": "",
+    "bgGradientAngle": "180",
+    "cardStyle": {
+        "borderRadius": "12px",
+        "shadow": "0 4px 12px rgba(0,0,0,0.4)"
+    },
+    "intro": "fade"
 }

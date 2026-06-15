@@ -419,6 +419,8 @@
         <div><label>bgCardHover</label><input type="color" id="tCardH" onchange="saveTheme();updateThemePreview()"></div>
         <div><label>textPrimary</label><input type="color" id="tTxt" onchange="saveTheme();updateThemePreview()"></div>
         <div><label>textSecondary</label><input type="color" id="tTxt2" onchange="saveTheme();updateThemePreview()"></div>
+        <div><label>Card radius</label><input type="number" id="tCardRadius" value="10" min="0" max="30" onchange="saveTheme();updateThemePreview()"></div>
+        <div><label>Card shadow</label><input type="text" id="tCardShadow" value="0 4px 8px rgba(0,0,0,0.3)" placeholder="0 4px 8px rgba(0,0,0,0.3)" onchange="saveTheme();updateThemePreview()"></div>
       </div>
     </div>
     <div class="card">
@@ -446,6 +448,15 @@
         </div>
         <div class="col"><label>Gradient kulma (0-360°)</label><input type="number" id="tGradAngle" value="180" min="0" max="360" onchange="saveTheme();updateThemePreview()"></div>
         <div class="col"><label>Anim. nopeus (s)</label><input type="number" id="tAnimSpeed" value="8" min="1" max="30" onchange="saveTheme()"></div>
+        <div class="col"><label>Intro animaatio</label>
+          <select id="tIntro" onchange="saveTheme();updateThemePreview()">
+            <option value="fade">Fade in</option>
+            <option value="slide">Slide from bottom</option>
+            <option value="zoom">Zoom in</option>
+            <option value="none">None (instant)</option>
+          </select>
+        </div>
+      </div>
       </div>
       <h3 style="margin-top:12px">Valmiit teemat (klikkaa &rarr; esikatsele &rarr; tallenna)</h3>
       <div class="preset-grid" id="presetGrid"></div>
@@ -993,7 +1004,10 @@ function themePayload() {
     animationSpeed: document.getElementById('tAnimSpeed').value || '8',
     bgGradient1:    hex('tGrad1'),
     bgGradient2:    hex('tGrad2'),
-    bgGradientAngle: document.getElementById('tGradAngle').value || '180',
+    bgGradientAngle: document.getElementById('tGradAngle').value || '180',    bgCardRadius: cr,
+    bgCardShadow: cs,
+    intro: intr,
+
   };
 }
 async function saveTheme() {
@@ -1092,7 +1106,7 @@ function updateThemePreview() {
   if (elInfo) {
     const g1=get('tGrad1'), g2=get('tGrad2');
     const gradTxt = (g1&&g2) ? ` | Gradient: ${g1}→${g2}` : '';
-    elInfo.textContent = `Accent: ${ac} | bgPrimary: ${bg} | bgSecondary: ${bg2} | Kortti: ${ca} | Hover: ${ch} | Anim: ${an||'ei'}${gradTxt}`;
+    elInfo.textContent = `Accent: ${ac} | bgPrimary: ${bg} | bgSecondary: ${bg2} | Kortti: ${ca} | Hover: ${ch} | Anim: ${an||'ei'}${gradTxt} | Radius: ${cr}px | Shadow: ${cs} | Intro: ${intr}`;
   }
 
   // Mini animation preview
