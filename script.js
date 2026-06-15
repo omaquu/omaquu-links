@@ -817,13 +817,15 @@ async function checkStreamLive() {
         embedTitle.textContent = `LIVE @${streamUser}`;
         embed.style.borderColor = 'var(--live)';
         embed.style.boxShadow = '0 0 20px rgba(239,68,68,0.2)';
+        frame.src = embedSrc;
     } else if (alwaysShow) {
         embed.style.display = 'block';
-        liveDot.style.background = 'var(--text-muted)';
+        liveDot.style.background = '';
         liveDot.classList.remove('live-dot');
         embedTitle.textContent = `@${streamUser} · Offline · ${streamType.toUpperCase()}`;
         embed.style.borderColor = 'var(--border)';
         embed.style.boxShadow = 'none';
+        frame.src = embedSrc;
     } else {
         embed.style.display = 'none';
     }
