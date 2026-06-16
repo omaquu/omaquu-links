@@ -38,8 +38,6 @@ body[data-intro="slide"]  .app { animation: slideInFromBottom 0.6s ease-out; }
 body[data-intro="zoom"]   .app { animation: zoomIn 0.6s ease-out; }
 body[data-intro="none"]   .app { animation: none; }
 
-}
-
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--bg-primary);
