@@ -1032,11 +1032,17 @@ function escHtml(s) {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initSearch();
     loadData();
-});
+  });
+} else {
+  initTabs();
+  initSearch();
+  loadData();
+}
 
 // ─── FALLBACK ─────────────────────────────────────────────────────────────
 }
