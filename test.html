@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test</title></head>
+<body style="background:#111;color:#fff;font-family:monospace;padding:20px">
+<h2>omaquu-links diagnoosi</h2>
+<div id="log"></div>
+<script>
+const log = document.getElementById('log');
+function add(msg, ok=true) {
+    const div = document.createElement('div');
+    div.style.color = ok ? '#0f0' : '#f00';
+    div.textContent = msg;
+    log.appendChild(div);
+}
+
+add('1. HTML loaded: OK');
+
+fetch('script.js').then(r => {
+    add('2. script.js fetch: ' + r.status + ' ' + r.statusText, r.ok);
+    return r.text();
+}).then(text => {
+    add('3. script.js size: ' + text.length + ' bytes');
+    try { new Function(text); add('4. JS parse: OK'); }
+    catch(e) { add('4. JS parse FAIL: ' + e.message, false); }
+}).catch(e => add('2b. script.js fetch FAIL: ' + e, false));
+
+fetch('style.css').then(r => {
+    add('5. style.css fetch: ' + r.status, r.ok);
+    return r.text();
+}).then(text => {
+    add('6. style.css size: ' + text.length + ' bytes');
+}).catch(e => add('5b. style.css fetch FAIL: ' + e, false));
+
+fetch('data.json').then(r => {
+    add('7. data.json fetch: ' + r.status, r.ok);
+    return r.json();
+}).then(data => {
+    add('8. data.json parse: ' + data.profile?.displayName + ', links=' + data.links?.length);
+}).catch(e => add('7b. data.json FAIL: ' + e, false));
+
+fetch('theme.json').then(r => {
+    add('9. theme.json fetch: ' + r.status, r.ok);
+    return r.json();
+}).then(data => {
+    add('10. theme.json parse: bgAnimation=' + data.bgAnimation);
+}).catch(e => add('9b. theme.json FAIL: ' + e, false));
+
+const s = document.createElement('script');
+s.src = 'script.js';
+s.onload = () => add('11. script.js loaded via tag: OK');
+s.onerror = (e) => add('11. script.js load FAIL', false);
+document.body.appendChild(s);
+</script>
+</body>
+</html>
