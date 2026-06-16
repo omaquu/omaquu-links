@@ -358,7 +358,6 @@ function startBgAnimation(type, color) {
             animFrame = requestAnimationFrame(drawGalaxy);
         }
         drawGalaxy();
-    }
     } else if (type === 'ufo') {
         // UFO with beam
         let ufoX = canvas.width * 0.25;
@@ -1040,6 +1039,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ─── FALLBACK ─────────────────────────────────────────────────────────────
+}
 function getFallbackData() {
     return {
         profile: { username: '@omaquu', displayName: 'omaquu', bio: 'Someloukkaantuja', avatar: '', quickLinks: [] },
