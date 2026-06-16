@@ -345,6 +345,104 @@ function startBgAnimation(type, color) {
             animFrame = requestAnimationFrame(drawGalaxy);
         }
         drawGalaxy();
+
+    } else if (type === 'ufo') {
+        let ufoX = -120, ufoY = canvas.height * 0.25, beamPhase = 0;
+        function drawUFO() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ufoX += 1.2;
+            if (ufoX > canvas.width + 200) ufoX = -200;
+            beamPhase += 0.04;
+            // Laser beam
+            const bGrad = ctx.createLinearGradient(ufoX, ufoY + 25, ufoX, canvas.height);
+            bGrad.addColorStop(0, `rgba(${r},${g},${b},0.5)`);
+            bGrad.addColorStop(0.6, `rgba(${r},${g},${b},0.1)`);
+            bGrad.addColorStop(1, 'transparent');
+            ctx.beginPath();
+            ctx.moveTo(ufoX - 35, ufoY + 25);
+            ctx.lineTo(ufoX - 140, canvas.height);
+            ctx.lineTo(ufoX + 140, canvas.height);
+            ctx.lineTo(ufoX + 35, ufoY + 25);
+            ctx.closePath();
+            ctx.fillStyle = bGrad;
+            ctx.fill();
+            // Beam pulse orb
+            const pulseY = ufoY + 25 + (Math.sin(beamPhase) * 0.5 + 0.5) * (canvas.height - ufoY - 80);
+            ctx.beginPath();
+            ctx.arc(ufoX, pulseY, 6, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${r},${g},${b},0.9)`;
+            ctx.fill();
+            // UFO dome
+            ctx.beginPath();
+            ctx.ellipse(ufoX, ufoY, 55, 18, 0, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${r},${g},${b},0.35)`;
+            ctx.fill();
+            ctx.strokeStyle = `rgba(${r},${g},${b},0.8)`;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            // Cabin
+            ctx.beginPath();
+            ctx.ellipse(ufoX, ufoY - 10, 20, 12, 0, Math.PI, 0);
+            ctx.fillStyle = `rgba(${r},${g},${b},0.25)`;
+            ctx.fill();
+            // Lights
+            for (let i = -2; i <= 2; i++) {
+                const la = Math.sin(beamPhase * 2 + i) * 0.5 + 0.5;
+                ctx.beginPath();
+                ctx.arc(ufoX + i * 18, ufoY, 4, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,0,${la.toFixed(2)})`;
+                ctx.fill();
+            }
+            animFrame = requestAnimationFrame(drawUFO);
+        }
+        drawUFO();
+
+    } else if (type === 'cyberpunk') {
+        let offset = 0;
+        const hLines = Array.from({length: 15}, () => ({ y: Math.random() * canvas.height * 0.5, speed: Math.random() * 1.5 + 0.5 }));
+        function drawCyber() {
+            const t = Date.now() / 1000;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const horizon = canvas.height * 0.6;
+            // Sun glow
+            const sg = ctx.createRadialGradient(canvas.width / 2, horizon, 0, canvas.width / 2, horizon, 130);
+            sg.addColorStop(0, `rgba(${r},${g},${b},0.7)`);
+            sg.addColorStop(0.5, `rgba(${r},${g},${b},0.3)`);
+            sg.addColorStop(1, 'transparent');
+            ctx.fillStyle = sg;
+            ctx.fillRect(0, horizon - 130, canvas.width, 130);
+            // Horizontal grid lines
+            hLines.forEach(l => {
+                l.y += l.speed;
+                if (l.y > canvas.height * 0.4) { l.y = 0; }
+                const yy = horizon + l.y * (canvas.height - horizon) / (canvas.height * 0.4);
+                const pulse = Math.sin(t * 2 + yy * 0.01) * 0.2 + 0.4;
+                ctx.strokeStyle = `rgba(${r},${g},${b},${pulse.toFixed(2)})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(canvas.width, yy); ctx.stroke();
+            });
+            // Vertical grid with perspective
+            const sp = 80, persp = 0.6;
+            for (let x = -(offset % sp); x < canvas.width + sp; x += sp) {
+                const px = canvas.width / 2 + (x - canvas.width / 2) * persp;
+                ctx.beginPath(); ctx.moveTo(x, horizon); ctx.lineTo(px, canvas.height);
+                ctx.strokeStyle = `rgba(${r},${g},${b},0.25)`;
+                ctx.lineWidth = 1; ctx.stroke();
+            }
+            // Scanlines
+            for (let y = 0; y < canvas.height; y += 3) {
+                ctx.fillStyle = `rgba(0,0,0,0.04)`;
+                ctx.fillRect(0, y, canvas.width, 1);
+            }
+            // Random glitch
+            if (Math.random() < 0.015) {
+                ctx.fillStyle = `rgba(${(r+80)%255},${(g+80)%255},${(b+80)%255},0.25)`;
+                ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 150 + 30, Math.random() * 2 + 1);
+            }
+            offset += 0.4;
+            animFrame = requestAnimationFrame(drawCyber);
+        }
+        drawCyber();
     }
 }
 
