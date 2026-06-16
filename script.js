@@ -68,6 +68,14 @@ function applyTheme(theme) {
     Object.entries(varMap).forEach(([key, cssVar]) => {
         if (theme[key]) root.style.setProperty(cssVar, theme[key]);
     });
+    // Derive live glow from live color
+    if (theme.live) {
+        root.style.setProperty('--live-glow', theme.live + '33');
+    }
+    // Derive success glow from success color
+    if (theme.success) {
+        root.style.setProperty('--success-glow', theme.success + '33');
+    }
 
     // Background image
     const bgOverlay = document.getElementById('bgImageOverlay');
@@ -347,99 +355,185 @@ function startBgAnimation(type, color) {
         drawGalaxy();
 
     } else if (type === 'ufo') {
-        let ufoX = -120, ufoY = canvas.height * 0.25, beamPhase = 0;
+        let ufoX = -120, ufoY = canvas.height * 0.15, beamPhase = 0, ufoPhase = 0;
         function drawUFO() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ufoX += 1.2;
+            // 3D wave movement - no left-to-right, only up-down bobbing
+            ufoPhase += 0.025;
+            const baseY = canvas.height * 0.15;
+            ufoY = baseY + Math.sin(ufoPhase) * 60 + Math.sin(ufoPhase * 1.7) * 25;
+            // UFO drifts slowly right with slight wave
+            ufoX += 0.35;
             if (ufoX > canvas.width + 200) ufoX = -200;
             beamPhase += 0.04;
-            // Laser beam
-            const bGrad = ctx.createLinearGradient(ufoX, ufoY + 25, ufoX, canvas.height);
-            bGrad.addColorStop(0, `rgba(${r},${g},${b},0.5)`);
-            bGrad.addColorStop(0.6, `rgba(${r},${g},${b},0.1)`);
+            // Fog/mist layers
+            const fogCount = 5;
+            for (let f = 0; f < fogCount; f++) {
+                const fogY = canvas.height * (0.35 + f * 0.12) + Math.sin(ufoPhase * 0.5 + f) * 15;
+                const fogA = 0.04 + Math.sin(ufoPhase * 0.3 + f * 0.7) * 0.02;
+                const fogGrad = ctx.createRadialGradient(
+                    canvas.width * (0.2 + f * 0.15) + Math.sin(ufoPhase * 0.4 + f * 1.2) * 40,
+                    fogY, 0,
+                    canvas.width * (0.2 + f * 0.15) + Math.sin(ufoPhase * 0.4 + f * 1.2) * 40,
+                    fogY, canvas.width * 0.4
+                );
+                fogGrad.addColorStop(0, `rgba(${r},${g},${b},${fogA.toFixed(3)})`);
+                fogGrad.addColorStop(0.5, `rgba(${r},${g},${b},${(fogA * 0.3).toFixed(3)})`);
+                fogGrad.addColorStop(1, 'transparent');
+                ctx.fillStyle = fogGrad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            // Light beam (starts ABOVE UFO dome, behind it)
+            const beamTop = ufoY - 30;
+            const bGrad = ctx.createLinearGradient(ufoX, beamTop, ufoX, canvas.height);
+            bGrad.addColorStop(0, `rgba(${r},${g},${b},0.55)`);
+            bGrad.addColorStop(0.4, `rgba(${r},${g},${b},0.2)`);
             bGrad.addColorStop(1, 'transparent');
             ctx.beginPath();
-            ctx.moveTo(ufoX - 35, ufoY + 25);
-            ctx.lineTo(ufoX - 140, canvas.height);
-            ctx.lineTo(ufoX + 140, canvas.height);
-            ctx.lineTo(ufoX + 35, ufoY + 25);
+            ctx.moveTo(ufoX - 40, beamTop);
+            ctx.lineTo(ufoX - 160, canvas.height);
+            ctx.lineTo(ufoX + 160, canvas.height);
+            ctx.lineTo(ufoX + 40, beamTop);
             ctx.closePath();
             ctx.fillStyle = bGrad;
             ctx.fill();
-            // Beam pulse orb
-            const pulseY = ufoY + 25 + (Math.sin(beamPhase) * 0.5 + 0.5) * (canvas.height - ufoY - 80);
+            // Beam pulse orb (falling through beam)
+            const pulseY = beamTop + (Math.sin(beamPhase) * 0.5 + 0.5) * (canvas.height - beamTop - 40);
             ctx.beginPath();
-            ctx.arc(ufoX, pulseY, 6, 0, Math.PI * 2);
+            ctx.arc(ufoX, pulseY, 7, 0, Math.PI * 2);
             ctx.fillStyle = `rgba(${r},${g},${b},0.9)`;
             ctx.fill();
-            // UFO dome
             ctx.beginPath();
-            ctx.ellipse(ufoX, ufoY, 55, 18, 0, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(${r},${g},${b},0.35)`;
+            ctx.arc(ufoX, pulseY, 12, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${r},${g},${b},0.25)`;
             ctx.fill();
-            ctx.strokeStyle = `rgba(${r},${g},${b},0.8)`;
-            ctx.lineWidth = 2;
+            // UFO dome (glass)
+            ctx.beginPath();
+            ctx.ellipse(ufoX, ufoY, 58, 20, 0, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${r},${g},${b},0.4)`;
+            ctx.fill();
+            ctx.strokeStyle = `rgba(${r},${g},${b},0.9)`;
+            ctx.lineWidth = 2.5;
             ctx.stroke();
             // Cabin
             ctx.beginPath();
-            ctx.ellipse(ufoX, ufoY - 10, 20, 12, 0, Math.PI, 0);
-            ctx.fillStyle = `rgba(${r},${g},${b},0.25)`;
+            ctx.ellipse(ufoX, ufoY - 12, 22, 14, 0, Math.PI, 0);
+            ctx.fillStyle = `rgba(${r},${g},${b},0.3)`;
             ctx.fill();
-            // Lights
+            // Lights (blinking)
             for (let i = -2; i <= 2; i++) {
-                const la = Math.sin(beamPhase * 2 + i) * 0.5 + 0.5;
+                const la = Math.sin(beamPhase * 2.5 + i * 1.3) * 0.5 + 0.5;
                 ctx.beginPath();
-                ctx.arc(ufoX + i * 18, ufoY, 4, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255,255,0,${la.toFixed(2)})`;
+                ctx.arc(ufoX + i * 20, ufoY + 4, 4.5, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,80,${la.toFixed(2)})`;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(ufoX + i * 20, ufoY + 4, 8, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,220,80,${(la * 0.2).toFixed(2)})`;
                 ctx.fill();
             }
+            // Extra glow under UFO
+            const underGlow = ctx.createRadialGradient(ufoX, ufoY + 15, 0, ufoX, ufoY + 15, 80);
+            underGlow.addColorStop(0, `rgba(${r},${g},${b},0.2)`);
+            underGlow.addColorStop(1, 'transparent');
+            ctx.fillStyle = underGlow;
+            ctx.fillRect(ufoX - 80, ufoY, 160, 100);
             animFrame = requestAnimationFrame(drawUFO);
         }
         drawUFO();
 
     } else if (type === 'cyberpunk') {
         let offset = 0;
-        const hLines = Array.from({length: 15}, () => ({ y: Math.random() * canvas.height * 0.5, speed: Math.random() * 1.5 + 0.5 }));
+        const hLines = Array.from({length: 25}, () => ({ y: Math.random() * canvas.height * 0.55, speed: Math.random() * 1.8 + 0.6 }));
         function drawCyber() {
             const t = Date.now() / 1000;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const horizon = canvas.height * 0.6;
-            // Sun glow
-            const sg = ctx.createRadialGradient(canvas.width / 2, horizon, 0, canvas.width / 2, horizon, 130);
-            sg.addColorStop(0, `rgba(${r},${g},${b},0.7)`);
-            sg.addColorStop(0.5, `rgba(${r},${g},${b},0.3)`);
+            // Sky gradient (top half)
+            const sky = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.55);
+            sky.addColorStop(0, `rgba(${r},${g},${b},0.25)`);
+            sky.addColorStop(0.5, `rgba(${r},${g},${b},0.12)`);
+            sky.addColorStop(1, `rgba(${r},${g},${b},0.03)`);
+            ctx.fillStyle = sky;
+            ctx.fillRect(0, 0, canvas.width, canvas.height * 0.55);
+            // Horizon = 55% down
+            const horizon = canvas.height * 0.55;
+            // Sun with horizontal stripes (classic synthwave)
+            const sunX = canvas.width / 2, sunY = horizon - 10, sunR = 90;
+            // Sun background
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${r},${g},${b},0.5)`;
+            ctx.fill();
+            // Sun horizontal cut lines (stripes)
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);
+            ctx.clip();
+            const stripeCount = 14;
+            for (let s = 0; s < stripeCount; s++) {
+                const sy = sunY - sunR + (s / stripeCount) * sunR * 2;
+                const sh = 3 + s * 0.5;
+                ctx.fillStyle = `rgba(10,10,15,${0.3 + s * 0.05})`;
+                ctx.fillRect(sunX - sunR, sy, sunR * 2, sh);
+            }
+            ctx.restore();
+            // Sun glow ring
+            const sg = ctx.createRadialGradient(sunX, sunY, sunR * 0.5, sunX, sunY, sunR * 1.4);
+            sg.addColorStop(0, `rgba(${r},${g},${b},0.4)`);
+            sg.addColorStop(0.7, `rgba(${r},${g},${b},0.1)`);
             sg.addColorStop(1, 'transparent');
             ctx.fillStyle = sg;
-            ctx.fillRect(0, horizon - 130, canvas.width, 130);
-            // Horizontal grid lines
-            hLines.forEach(l => {
-                l.y += l.speed;
-                if (l.y > canvas.height * 0.4) { l.y = 0; }
-                const yy = horizon + l.y * (canvas.height - horizon) / (canvas.height * 0.4);
-                const pulse = Math.sin(t * 2 + yy * 0.01) * 0.2 + 0.4;
-                ctx.strokeStyle = `rgba(${r},${g},${b},${pulse.toFixed(2)})`;
-                ctx.lineWidth = 1;
-                ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(canvas.width, yy); ctx.stroke();
-            });
-            // Vertical grid with perspective
-            const sp = 80, persp = 0.6;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Grid
+            const sp = 60, persp = 0.65;
+            // Vertical lines with perspective
             for (let x = -(offset % sp); x < canvas.width + sp; x += sp) {
                 const px = canvas.width / 2 + (x - canvas.width / 2) * persp;
-                ctx.beginPath(); ctx.moveTo(x, horizon); ctx.lineTo(px, canvas.height);
-                ctx.strokeStyle = `rgba(${r},${g},${b},0.25)`;
-                ctx.lineWidth = 1; ctx.stroke();
+                const alpha = 0.15 + Math.sin(t * 1.5 + x * 0.01) * 0.05;
+                ctx.beginPath();
+                ctx.moveTo(x, horizon);
+                ctx.lineTo(px, canvas.height);
+                ctx.strokeStyle = `rgba(${r},${g},${b},${alpha.toFixed(2)})`;
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
             }
-            // Scanlines
-            for (let y = 0; y < canvas.height; y += 3) {
-                ctx.fillStyle = `rgba(0,0,0,0.04)`;
-                ctx.fillRect(0, y, canvas.width, 1);
+            // Horizontal grid lines (full width, moving toward viewer)
+            hLines.forEach(l => {
+                l.y += l.speed;
+                if (l.y > canvas.height) { l.y = 0; }
+                const yy = horizon + l.y;
+                const pulse = Math.sin(t * 2.5 + l.y * 0.02) * 0.15 + 0.3;
+                ctx.beginPath();
+                ctx.moveTo(0, yy);
+                ctx.lineTo(canvas.width, yy);
+                ctx.strokeStyle = `rgba(${r},${g},${b},${pulse.toFixed(2)})`;
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+            });
+            // Horizon line glow
+            ctx.beginPath();
+            ctx.moveTo(0, horizon);
+            ctx.lineTo(canvas.width, horizon);
+            ctx.strokeStyle = `rgba(${r},${g},${b},0.6)`;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            // Scanlines (subtle)
+            for (let y = 0; y < canvas.height; y += 4) {
+                ctx.fillStyle = `rgba(0,0,0,0.06)`;
+                ctx.fillRect(0, y, canvas.width, 1.5);
             }
-            // Random glitch
-            if (Math.random() < 0.015) {
-                ctx.fillStyle = `rgba(${(r+80)%255},${(g+80)%255},${(b+80)%255},0.25)`;
-                ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 150 + 30, Math.random() * 2 + 1);
+            // Random glitch bars
+            if (Math.random() < 0.02) {
+                ctx.fillStyle = `rgba(${(r+100)%255},${(g+80)%255},${(b+120)%255},0.3)`;
+                ctx.fillRect(0, Math.random() * canvas.height, canvas.width, Math.random() * 4 + 1);
             }
-            offset += 0.4;
+            // Color bar at very top
+            const topBar = ctx.createLinearGradient(0, 0, 0, 3);
+            topBar.addColorStop(0, `rgba(${r},${g},${b},0.5)`);
+            topBar.addColorStop(1, 'transparent');
+            ctx.fillStyle = topBar;
+            ctx.fillRect(0, 0, canvas.width, 3);
+            offset += 0.5;
             animFrame = requestAnimationFrame(drawCyber);
         }
         drawCyber();
