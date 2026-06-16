@@ -419,8 +419,6 @@
         <div><label>bgCardHover</label><input type="color" id="tCardH" onchange="saveTheme();updateThemePreview()"></div>
         <div><label>textPrimary</label><input type="color" id="tTxt" onchange="saveTheme();updateThemePreview()"></div>
         <div><label>textSecondary</label><input type="color" id="tTxt2" onchange="saveTheme();updateThemePreview()"></div>
-        <div><label>Card radius</label><input type="number" id="tCardRadius" value="10" min="0" max="30" onchange="saveTheme();updateThemePreview()"></div>
-        <div><label>Card shadow</label><input type="text" id="tCardShadow" value="0 4px 8px rgba(0,0,0,0.3)" placeholder="0 4px 8px rgba(0,0,0,0.3)" onchange="saveTheme();updateThemePreview()"></div>
       </div>
     </div>
     <div class="card">
@@ -442,23 +440,14 @@
             <option value="bubbles">Kuplat</option>
             <option value="aurora">Revontulet</option>
             <option value="galaxy">Galaksi</option>
+            <option value="ufo">UFO</option>
+            <option value="cyberpunk">Cyberpunk (Synthwave)</option>
             <option value="gradient-shift">Gradientti-shiftaus</option>
             <option value="aurora-shift">Aurora-shiftaus</option>
-            <option value="ufo">UFO</option>
-            <option value="cyberpunk">Cyberpunk</option>
           </select>
         </div>
         <div class="col"><label>Gradient kulma (0-360°)</label><input type="number" id="tGradAngle" value="180" min="0" max="360" onchange="saveTheme();updateThemePreview()"></div>
         <div class="col"><label>Anim. nopeus (s)</label><input type="number" id="tAnimSpeed" value="8" min="1" max="30" onchange="saveTheme()"></div>
-        <div class="col"><label>Intro animaatio</label>
-          <select id="tIntro" onchange="saveTheme();updateThemePreview()">
-            <option value="fade">Fade in</option>
-            <option value="slide">Slide from bottom</option>
-            <option value="zoom">Zoom in</option>
-            <option value="none">None (instant)</option>
-          </select>
-        </div>
-      </div>
       </div>
       <h3 style="margin-top:12px">Valmiit teemat (klikkaa &rarr; esikatsele &rarr; tallenna)</h3>
       <div class="preset-grid" id="presetGrid"></div>
@@ -992,9 +981,6 @@ async function loadTheme() {
   setTimeout(updateThemePreview, 200);
 }
 function themePayload() {
-  const cr = document.getElementById('tCardRadius').value + 'px';
-  const cs = document.getElementById('tCardShadow').value;
-  const intr = document.getElementById('tIntro').value;
   return {
     accent:         hex('tAccent'),
     bgPrimary:      hex('tBg1'),
@@ -1010,8 +996,6 @@ function themePayload() {
     bgGradient1:    hex('tGrad1'),
     bgGradient2:    hex('tGrad2'),
     bgGradientAngle: document.getElementById('tGradAngle').value || '180',
-    cardStyle: { borderRadius: cr, shadow: cs },
-    intro: intr
   };
 }
 async function saveTheme() {
@@ -1020,8 +1004,8 @@ async function saveTheme() {
 async function loadPresets() {
   const presets = await api('/theme/presets').catch(()=>({}));
   const grid = document.getElementById('presetGrid');
-  const names = {orange:'🍊 Orange', purple:'💜 Purple', matrix:'🟢 Matrix', stars:'⭐ Stars', midnight:'🌙 Midnight', neon:'⚡ Neon', fire:'🔥 Fire', ocean:'🌊 Ocean', aurora:'🌌 Aurora', galaxy:'🌌 Galaxy', default:'💗 Default', 'x-files':'🟢 X-Files', 'autumn-forest':'🍂 Autumn', cyberpunk:'💜 Cyber'};
-const simpleNames = {orange:'Orange', purple:'Purple', matrix:'Matrix', stars:'Stars', midnight:'Midnight', neon:'Neon', fire:'Fire', ocean:'Ocean', aurora:'Aurora', galaxy:'Galaxy', default:'Default', 'x-files':'X-Files', 'autumn-forest':'Autumn Forest', cyberpunk:'Cyberpunk', 'ufo':'UFO'};
+  const names = {orange:'🍊 Orange', purple:'💜 Purple', matrix:'🟢 Matrix', stars:'⭐ Stars', midnight:'🌙 Midnight', neon:'⚡ Neon', fire:'🔥 Fire', ocean:'🌊 Ocean', aurora:'🌌 Aurora', galaxy:'🌌 Galaxy'};
+  const simpleNames = {orange:'Orange', purple:'Purple', matrix:'Matrix', stars:'Stars', midnight:'Midnight', neon:'Neon', fire:'Fire', ocean:'Ocean', aurora:'Aurora', galaxy:'Galaxy', ufo:'UFO', cyberpunk:'Cyberpunk (Synthwave)'};
   grid.innerHTML = Object.entries(presets).map(([k,v]) => `
     <div class="preset" onclick="applyPreset('${k}')" title="${simpleNames[k]||k}\nAccent: ${v.accent}\nTausta: ${v.bgPrimary}\nKortti: ${v.bgCard}\nAnimaatio: ${v.bgAnimation||'Ei'}" style="background:${v.bgPrimary};color:${v.textPrimary||'#fff'}">
       <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
@@ -1085,9 +1069,6 @@ function updateThemePreview() {
   const ch  = get('tCardH')   || '#22222e';
   const tx  = get('tTxt')     || '#ffffff';
   const an  = get('tAnimType')|| '';
-  const cr  = (get('tCardRadius') || '10') + 'px';
-  const cs  = get('tCardShadow') || '0 4px 8px rgba(0,0,0,0.3)';
-  const intr = get('tIntro') || 'fade';
 
   const elBg = document.getElementById('prevBg');
   if (elBg) {
@@ -1113,7 +1094,7 @@ function updateThemePreview() {
   if (elInfo) {
     const g1=get('tGrad1'), g2=get('tGrad2');
     const gradTxt = (g1&&g2) ? ` | Gradient: ${g1}→${g2}` : '';
-    elInfo.textContent = `Accent: ${ac} | bgPrimary: ${bg} | bgSecondary: ${bg2} | Kortti: ${ca} | Hover: ${ch} | Anim: ${an||'ei'}${gradTxt} | Radius: ${cr}px | Shadow: ${cs} | Intro: ${intr}`;
+    elInfo.textContent = `Accent: ${ac} | bgPrimary: ${bg} | bgSecondary: ${bg2} | Kortti: ${ca} | Hover: ${ch} | Anim: ${an||'ei'}${gradTxt}`;
   }
 
   // Mini animation preview

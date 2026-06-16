@@ -69,19 +69,6 @@ function applyTheme(theme) {
         if (theme[key]) root.style.setProperty(cssVar, theme[key]);
     });
 
-    // cardStyle: borderRadius + shadow
-    if (theme.cardStyle) {
-        if (theme.cardStyle.borderRadius)
-            root.style.setProperty('--card-radius', theme.cardStyle.borderRadius);
-        if (theme.cardStyle.shadow)
-            root.style.setProperty('--card-shadow', theme.cardStyle.shadow);
-    }
-
-    // Intro animation
-    if (theme.intro) {
-        document.body.setAttribute('data-intro', theme.intro);
-    }
-
     // Background image
     const bgOverlay = document.getElementById('bgImageOverlay');
     if (bgOverlay) {
@@ -358,141 +345,146 @@ function startBgAnimation(type, color) {
             animFrame = requestAnimationFrame(drawGalaxy);
         }
         drawGalaxy();
+
     } else if (type === 'ufo') {
-        // UFO with beam
-        let ufoX = canvas.width * 0.25;
+        // UFO flying with beam
+        let ufoX = -100;
         let ufoY = canvas.height * 0.3;
-        const ufoSpeed = 0.5;
-        const beamWidth = 80;
-        const beamHeight = 120;
+        let beamPhase = 0;
         
         function drawUFO() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Move UFO horizontally
-            ufoX += ufoSpeed;
-            if (ufoX > canvas.width + 100) ufoX = -100;
+            // Update UFO position
+            ufoX += 1.5;
+            if (ufoX > canvas.width + 200) ufoX = -200;
+            beamPhase += 0.05;
             
-            // Draw beam
-            ctx.fillStyle = `rgba(${r},${g},${b},0.2)`;
+            // Draw laser beam
+            const beamGrad = ctx.createLinearGradient(ufoX, ufoY + 30, ufoX, canvas.height);
+            beamGrad.addColorStop(0, `rgba(${r},${g},${b},0.6)`);
+            beamGrad.addColorStop(0.5, `rgba(${r},${g},${b},0.15)`);
+            beamGrad.addColorStop(1, 'transparent');
+            
             ctx.beginPath();
-            ctx.moveTo(ufoX + 24, ufoY + 24);  // Bottom center of UFO
-            ctx.lineTo(ufoX - beamWidth/2, ufoY + beamHeight);  // Bottom left
-            ctx.lineTo(ufoX + beamWidth/2, ufoY + beamHeight);  // Bottom right
+            ctx.moveTo(ufoX - 40, ufoY + 30);
+            ctx.lineTo(ufoX - 150, canvas.height);
+            ctx.lineTo(ufoX + 150, canvas.height);
+            ctx.lineTo(ufoX + 40, ufoY + 30);
             ctx.closePath();
+            ctx.fillStyle = beamGrad;
             ctx.fill();
             
-            // Draw UFO body
-            ctx.fillStyle = `rgba(${r},${g},${b},0.8)`;
+            // Beam pulse
+            const pulseY = ufoY + 30 + (Math.sin(beamPhase) * 0.5 + 0.5) * (canvas.height - ufoY - 100);
             ctx.beginPath();
-            ctx.ellipse(ufoX + 24, ufoY + 24, 30, 12, 0, 0, Math.PI * 2);  // Main body
+            ctx.arc(ufoX, pulseY, 8, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${r},${g},${b},0.9)`;
             ctx.fill();
             
-            // UFO dome
-            ctx.fillStyle = `rgba(${(r+100)%255},${(g+100)%255},${(b+100)%255},0.9)`;
+            // UFO body
             ctx.beginPath();
-            ctx.arc(ufoX + 24, ufoY + 12, 20, 8, 0, Math.PI, false);  // Dome
-            ctx.lineTo(ufoX + 44, ufoY + 12);
-            ctx.closePath();
+            ctx.ellipse(ufoX, ufoY, 60, 20, 0, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${r},${g},${b},0.4)`;
             ctx.fill();
+            ctx.strokeStyle = `rgba(${r},${g},${b},0.9)`;
+            ctx.lineWidth = 2;
+            ctx.stroke();
             
             // UFO lights
-            ctx.fillStyle = '#ff0';
-            ctx.beginPath();
-            ctx.arc(ufoX + 12, ufoY + 24, 3, 0, Math.PI * 2);  // Left light
-            ctx.arc(ufoX + 36, ufoY + 24, 3, 0, Math.PI * 2);  // Right light
-            ctx.fill();
+            for (let i = -2; i <= 2; i++) {
+                const lightAlpha = (Math.sin(beamPhase * 2 + i) * 0.5 + 0.5);
+                ctx.beginPath();
+                ctx.arc(ufoX + i * 20, ufoY, 5, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,0,${lightAlpha})`;
+                ctx.fill();
+            }
             
             animFrame = requestAnimationFrame(drawUFO);
         }
         drawUFO();
 
     } else if (type === 'cyberpunk') {
-        // Cyberpunk glitch and neon
-        const glitchOffset = 4;
-        let time = 0;
+        // Cyberpunk synthwave grid
+        let offset = 0;
         const lines = [];
-        for (let i = 0; i < 20; i++) {
-            lines.push({
-                x1: Math.random() * canvas.width,
-                y1: Math.random() * canvas.height * 0.3,
-                x2: Math.random() * canvas.width,
-                y2: Math.random() * canvas.height * 0.3 + canvas.height * 0.7,
-                width: Math.random() * 2 + 1,
-                speed: Math.random() * 0.01 + 0.005,
-                phase: Math.random() * Math.PI * 2
-            });
-        }
         const glitches = [];
+        
+        for (let i = 0; i < 20; i++) {
+            lines.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height * 0.6, len: Math.random() * 100 + 50, speed: Math.random() * 2 + 1 });
+        }
         for (let i = 0; i < 8; i++) {
-            glitches.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                w: Math.random() * 60 + 20,
-                h: Math.random() * 20 + 5,
-                speed: Math.random() * 0.02 + 0.005,
-                offset: Math.random() * 100,
-                colorShift: Math.random() > 0.5
-            });
+            glitches.push({ y: Math.random() * canvas.height, w: Math.random() * 200 + 50, h: Math.random() * 3 + 1, life: 0 });
         }
         
         function drawCyberpunk() {
+            const t = Date.now() / 1000;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            time += 0.016;
             
-            // Draw neon lines
+            // Horizon line
+            const horizon = canvas.height * 0.65;
+            
+            // Grid
             ctx.lineCap = 'round';
             lines.forEach(line => {
-                ctx.strokeStyle = `rgba(${r},${g},${b},0.4)`;
-                ctx.lineWidth = line.width;
-                ctx.beginPath();
-                ctx.moveTo(line.x1, line.y1);
-                ctx.lineTo(line.x2, line.y2);
-                ctx.stroke();
+                line.y += line.speed;
+                if (line.y > horizon) { line.y = 0; line.x = Math.random() * canvas.width; }
                 
-                // Add pulsing
-                const pulse = 0.3 + 0.7 * Math.sin(time * line.speed * 100 + line.phase);
-                ctx.strokeStyle = `rgba(${r},${g},${b},${0.2 + 0.6 * pulse})`;
-                ctx.lineWidth = line.width * (0.5 + pulse * 0.5);
+                const pulse = (Math.sin(t * 2 + line.x * 0.01) * 0.3 + 0.5);
+                ctx.strokeStyle = `rgba(${r},${g},${b},${pulse})`;
+                ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.moveTo(line.x1, line.y1);
-                ctx.lineTo(line.x2, line.y2);
+                ctx.moveTo(0, horizon + line.y * 0.3);
+                ctx.lineTo(canvas.width, horizon + line.y * 0.3);
                 ctx.stroke();
             });
             
-            // Draw occasional glitches
-            if (Math.random() < 0.02) {
-                const g = glitches[Math.floor(Math.random() * glitches.length)];
-                ctx.fillStyle = g.colorShift ? 
-                    `rgba(${(b+100)%255},${(r+100)%255},${(g+100)%255},0.3)` :
-                    `rgba(${(r+100)%255},${(g+100)%255},${(b+100)%255},0.3)`;
-                ctx.fillRect(g.x, g.y, g.w, g.h);
-                
-                // Glitch offset lines
-                for (let i = 0; i < 3; i++) {
-                    const offset = (Math.random() - 0.5) * glitchOffset;
-                    ctx.strokeStyle = '#fff';
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.moveTo(g.x + offset, g.y + (i * g.h / 2));
-                    ctx.lineTo(g.x + g.w + offset, g.y + (i * g.h / 2));
-                    ctx.stroke();
-                }
-            }
-            
-            // Scan lines
-            ctx.strokeStyle = `rgba(0,0,0,0.1)`;
-            for (let y = 0; y < canvas.height; y += 4) {
+            // Vertical grid lines
+            const gridSpacing = 80;
+            const perspective = 0.7;
+            for (let x = -offset % gridSpacing; x < canvas.width + gridSpacing; x += gridSpacing) {
+                const px = canvas.width / 2 + (x - canvas.width / 2) * perspective;
                 ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
+                ctx.moveTo(x, horizon);
+                ctx.lineTo(px, canvas.height);
+                ctx.strokeStyle = `rgba(${r},${g},${b},0.3)`;
+                ctx.lineWidth = 1;
                 ctx.stroke();
             }
             
+            // Scanlines
+            for (let y = 0; y < canvas.height; y += 4) {
+                ctx.fillStyle = `rgba(0,0,0,${0.05 + Math.sin(t + y * 0.1) * 0.02})`;
+                ctx.fillRect(0, y, canvas.width, 2);
+            }
+            
+            // Glitch bars
+            if (Math.random() < 0.02) {
+                glitches[Math.floor(Math.random() * glitches.length)].life = 10;
+            }
+            glitches.forEach(g => {
+                if (g.life > 0) {
+                    g.life--;
+                    ctx.fillStyle = Math.random() > 0.5 
+                        ? `rgba(${(b+100)%255},${(r+100)%255},${(g+100)%255},0.3)` 
+                        : `rgba(${(r+100)%255},${(g+100)%255},${(b+100)%255},0.3)`;
+                    ctx.fillRect(Math.random() * canvas.width, g.y, g.w, g.h);
+                }
+            });
+            
+            // Sun/moon
+            const sunGrad = ctx.createRadialGradient(canvas.width/2, horizon, 0, canvas.width/2, horizon, 150);
+            sunGrad.addColorStop(0, `rgba(${r},${g},${b},0.8)`);
+            sunGrad.addColorStop(0.5, `rgba(${r},${g},${b},0.4)`);
+            sunGrad.addColorStop(1, 'transparent');
+            ctx.fillStyle = sunGrad;
+            ctx.fillRect(canvas.width/2 - 150, horizon - 150, 300, 150);
+            
+            offset += 0.5;
             animFrame = requestAnimationFrame(drawCyberpunk);
         }
         drawCyberpunk();
-
+    }
 }
 
 // ─── EMBED AUTO-DETECT ────────────────────────────────────────────────────
@@ -964,15 +956,13 @@ async function checkStreamLive() {
         embedTitle.textContent = `LIVE @${streamUser}`;
         embed.style.borderColor = 'var(--live)';
         embed.style.boxShadow = '0 0 20px rgba(239,68,68,0.2)';
-        frame.src = embedSrc;
     } else if (alwaysShow) {
         embed.style.display = 'block';
-        liveDot.style.background = '';
+        liveDot.style.background = 'var(--text-muted)';
         liveDot.classList.remove('live-dot');
         embedTitle.textContent = `@${streamUser} · Offline · ${streamType.toUpperCase()}`;
         embed.style.borderColor = 'var(--border)';
         embed.style.boxShadow = 'none';
-        frame.src = embedSrc;
     } else {
         embed.style.display = 'none';
     }
@@ -1032,17 +1022,11 @@ function escHtml(s) {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initSearch();
     loadData();
-  });
-} else {
-  initTabs();
-  initSearch();
-  loadData();
-}
+});
 
 // ─── FALLBACK ─────────────────────────────────────────────────────────────
 function getFallbackData() {
@@ -1062,5 +1046,4 @@ function getFallbackData() {
         ],
         streamAlwaysVisible: false
     };
-}
 }
