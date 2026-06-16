@@ -77,27 +77,36 @@ function applyTheme(theme) {
         root.style.setProperty('--success-glow', theme.success + '33');
     }
 
-    // Background image
+// Background image
     const bgOverlay = document.getElementById('bgImageOverlay');
     if (bgOverlay) {
-        if (theme.bgImage) {
-            bgOverlay.style.backgroundImage = `url(${theme.bgImage})`;
-            bgOverlay.style.display = 'block';
-        } else {
-            bgOverlay.style.display = 'none';
-        }
+      if (theme.bgImage) {
+        bgOverlay.style.backgroundImage = `url(${theme.bgImage})`;
+        bgOverlay.style.display = 'block';
+      } else {
+        bgOverlay.style.display = 'none';
+      }
+    }
+
+    // Background gradient (apply to body)
+    if (theme.bgGradient1 && theme.bgGradient2) {
+      document.body.style.background = `linear-gradient(${theme.bgGradientAngle || 180}deg, ${theme.bgGradient1}, ${theme.bgGradient2})`;
+    } else if (theme.bgGradient1) {
+      document.body.style.background = theme.bgGradient1;
+    } else if (theme.bgPrimary) {
+      document.body.style.background = theme.bgPrimary;
     }
 
     // Background animation
     if (theme.bgAnimation) {
-        startBgAnimation(theme.bgAnimation, theme.animationColor || theme.accent || '#ff6b35');
+      startBgAnimation(theme.bgAnimation, theme.animationColor || theme.accent || '#ff6b35');
     } else if (animFrame) {
-        cancelAnimationFrame(animFrame);
-        animFrame = null;
-        const canvas = document.getElementById('bgCanvas');
-        if (canvas) { const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height); }
+      cancelAnimationFrame(animFrame);
+      animFrame = null;
+      const canvas = document.getElementById('bgCanvas');
+      if (canvas) { const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height); }
     }
-}
+  }
 
 // ─── BACKGROUND ANIMATIONS ─────────────────────────────────────────────────
 function startBgAnimation(type, color) {
