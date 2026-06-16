@@ -444,112 +444,152 @@ function startBgAnimation(type, color) {
 
     } else if (type === 'cyberpunk') {
         let offset = 0;
-        const hLines = Array.from({length: 20}, () => ({ y: Math.random() * canvas.height * 0.5, speed: Math.random() * 2 + 1 }));
+        // Palm pool: 8 palms with z-depth (0=far/horizon, 1=close/viewer)
+        const palmPool = Array.from({length: 8}, (_, i) => ({
+            x: Math.random(), // horizontal position (0=left, 1=right)
+            z: Math.random(),  // depth (0=far, 1=close)
+            speed: 0.004 + Math.random() * 0.003, // forward speed
+            height: 0.22 + Math.random() * 0.1,
+            trunk: 0.14 + Math.random() * 0.06,
+            lean: (Math.random() - 0.5) * 0.15, // slight lean
+        }));
         function drawCyber() {
             const t = Date.now() / 1000;
             const W = canvas.width, H = canvas.height;
             ctx.clearRect(0, 0, W, H);
             const horizon = H * 0.5;
-            const vpX = W / 2, vpY = horizon * 0.3;
-            // Palm data computed inside (uses live canvas size)
-            const palms = [
-                { x: 0.10, height: H * 0.26, trunk: H * 0.17 },
-                { x: 0.90, height: H * 0.23, trunk: H * 0.15 },
-                { x: 0.25, height: H * 0.19, trunk: H * 0.12 },
-                { x: 0.75, height: H * 0.21, trunk: H * 0.13 },
-            ];
-            function drawPalm(px, py, ph, pt) {
-                ctx.strokeStyle = `rgba(${r},${g},${b},0.7)`;
-                ctx.lineWidth = 4;
+            const vpX = W / 2;
+            // ── ABOVE HORIZON: static dark sky ──
+            ctx.fillStyle = 'rgba(5,5,15,1)';
+            ctx.fillRect(0, 0, W, horizon);
+            // ── SUN: orange, sits on horizon ──
+            const sunX = W / 2, sunY = horizon, sunR = 70;
+            // Sun glow (orange)
+            const sg = ctx.createRadialGradient(sunX, sunY - sunR * 0.3, sunR * 0.2, sunX, sunY - sunR * 0.3, sunR * 1.8);
+            sg.addColorStop(0, 'rgba(255,140,0,0.5)');
+            sg.addColorStop(0.4, 'rgba(255,100,0,0.2)');
+            sg.addColorStop(1, 'transparent');
+            ctx.fillStyle = sg; ctx.fillRect(0, 0, W, horizon);
+            // Sun body with horizontal stripes
+            ctx.beginPath(); ctx.arc(sunX, sunY - sunR * 0.3, sunR, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,120,0,0.9)'; ctx.fill();
+            ctx.save();
+            ctx.beginPath(); ctx.arc(sunX, sunY - sunR * 0.3, sunR, 0, Math.PI * 2); ctx.clip();
+            for (let s = 0; s < 10; s++) {
+                const sy = sunY - sunR * 0.3 - sunR + (s / 10) * sunR * 2;
+                const sh = 2 + s * 0.8;
+                ctx.fillStyle = `rgba(20,5,35,${0.3 + s * 0.07})`;
+                ctx.fillRect(sunX - sunR, sy, sunR * 2, sh);
+            }
+            ctx.restore();
+            // ── HORIZON LINE: bright neon glow ──
+            ctx.beginPath(); ctx.moveTo(0, horizon); ctx.lineTo(W, horizon);
+            ctx.strokeStyle = 'rgba(255,0,200,0.9)'; ctx.lineWidth = 3; ctx.stroke();
+            // Extra horizon glow
+            ctx.beginPath(); ctx.moveTo(0, horizon); ctx.lineTo(W, horizon);
+            ctx.strokeStyle = 'rgba(255,0,200,0.3)'; ctx.lineWidth = 8; ctx.stroke();
+            // ── BELOW HORIZON: animated synthwave ground ──
+            // Ground base
+            const ground = ctx.createLinearGradient(0, horizon, 0, H);
+            ground.addColorStop(0, 'rgba(20,0,30,1)');
+            ground.addColorStop(1, 'rgba(5,0,15,1)');
+            ctx.fillStyle = ground; ctx.fillRect(0, horizon, W, H - horizon);
+            // Moving horizontal lines (toward viewer = from horizon outward)
+            const hLines = Array.from({length: 18}, () => ({ y: Math.random(), speed: Math.random() * 0.003 + 0.0015 }));
+            hLines.forEach(l => {
+                l.y += l.speed;
+                if (l.y > 1) l.y = 0;
+                // Perspective: lines closer to horizon are more compressed
+                const yy = horizon + Math.pow(l.y, 1.5) * (H - horizon);
+                const pulse = Math.sin(t * 2 + l.y * 8) * 0.15 + 0.5;
+                ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(W, yy);
+                ctx.strokeStyle = `rgba(255,0,200,${pulse.toFixed(2)})`;
+                ctx.lineWidth = 1 + l.y * 1.5; ctx.stroke();
+            });
+            // Vertical perspective lines (from vanishing point outward)
+            const sp = 80;
+            for (let i = 0; i < 16; i++) {
+                const frac = (i / 15) - 0.5; // -0.5 to 0.5
+                const bx = W / 2 + frac * W * 2.2;
+                const pulse = Math.sin(t * 1.5 + i) * 0.1 + 0.4;
+                ctx.beginPath(); ctx.moveTo(vpX, horizon); ctx.lineTo(bx, H);
+                ctx.strokeStyle = `rgba(255,0,200,${pulse.toFixed(2)})`;
+                ctx.lineWidth = 1 + Math.abs(frac) * 1.5; ctx.stroke();
+            }
+            // ── MOVING PALMS: from horizon to viewer ──
+            function drawPalm(px, py, ph, pt, scale) {
+                // Neon green palm
+                const green = 'rgba(0,255,120,';
+                const glowG = 'rgba(0,255,120,';
+                const lw = 2 + scale * 3;
+                // Glow
+                ctx.shadowColor = 'rgba(0,255,120,0.8)';
+                ctx.shadowBlur = 8 * scale;
+                // Trunk
+                ctx.strokeStyle = green + '0.9)';
+                ctx.lineWidth = lw;
                 ctx.beginPath();
                 ctx.moveTo(px, py);
-                ctx.quadraticCurveTo(px + Math.sin(t * 0.7) * 4, py - pt * 0.5, px, py - pt);
+                ctx.quadraticCurveTo(px + scale * 8, py - pt * 0.5, px, py - pt);
                 ctx.stroke();
-                for (let tt = 0; tt < 5; tt++) {
-                    const ty = py - tt * (pt / 5);
-                    ctx.strokeStyle = `rgba(${r},${g},${b},0.35)`;
+                // Trunk rings
+                for (let tt = 0; tt < 4; tt++) {
+                    const ty = py - tt * (pt / 4);
+                    ctx.strokeStyle = green + '0.4)';
                     ctx.lineWidth = 1;
-                    ctx.beginPath(); ctx.moveTo(px - 4, ty); ctx.lineTo(px + 4, ty); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(px - scale * 4, ty); ctx.lineTo(px + scale * 4, ty); ctx.stroke();
                 }
+                ctx.shadowBlur = 0;
+                // Leaves
                 const topX = px, topY = py - pt;
                 for (let l = 0; l < 7; l++) {
-                    const angle = -Math.PI / 2 + (l / 6 - 0.5) * 1.6;
-                    const len = ph * 0.85;
+                    const angle = -Math.PI / 2 + (l / 6 - 0.5) * 1.5;
+                    const len = ph * 0.8;
                     const ex = topX + Math.cos(angle) * len, ey = topY + Math.sin(angle) * len;
                     ctx.beginPath(); ctx.moveTo(topX, topY);
                     ctx.bezierCurveTo(
-                        topX + Math.cos(angle - 0.35) * len * 0.4, topY + Math.sin(angle - 0.35) * len * 0.4 + 12,
-                        topX + Math.cos(angle + 0.35) * len * 0.4, topY + Math.sin(angle + 0.35) * len * 0.4 + 12,
+                        topX + Math.cos(angle - 0.4) * len * 0.4, topY + Math.sin(angle - 0.4) * len * 0.4 + 10 * scale,
+                        topX + Math.cos(angle + 0.4) * len * 0.4, topY + Math.sin(angle + 0.4) * len * 0.4 + 10 * scale,
                         ex, ey
                     );
-                    ctx.strokeStyle = `rgba(${r},${g},${b},0.55)`;
-                    ctx.lineWidth = 2; ctx.stroke();
+                    ctx.strokeStyle = green + '0.85)';
+                    ctx.lineWidth = 1.5 + scale; ctx.stroke();
                 }
             }
-            // Sky gradient
-            const sky = ctx.createLinearGradient(0, 0, 0, horizon);
-            sky.addColorStop(0, `rgba(${r},${g},${b},0.22)`);
-            sky.addColorStop(0.6, `rgba(${r},${g},${b},0.08)`);
-            sky.addColorStop(1, 'transparent');
-            ctx.fillStyle = sky; ctx.fillRect(0, 0, W, horizon);
-            // Ground gradient
-            const ground = ctx.createLinearGradient(0, horizon, 0, H);
-            ground.addColorStop(0, `rgba(${r},${g},${b},0.08)`);
-            ground.addColorStop(1, `rgba(${r},${g},${b},0.28)`);
-            ctx.fillStyle = ground; ctx.fillRect(0, horizon, W, H - horizon);
-            // Sun with stripes
-            const sunX = W / 2, sunY = horizon - 15, sunR = 80;
-            ctx.beginPath(); ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(${r},${g},${b},0.45)`; ctx.fill();
-            ctx.save();
-            ctx.beginPath(); ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2); ctx.clip();
-            for (let s = 0; s < 14; s++) {
-                const sy = sunY - sunR + (s / 14) * sunR * 2;
-                ctx.fillStyle = `rgba(10,10,20,${0.28 + s * 0.05})`;
-                ctx.fillRect(sunX - sunR, sy, sunR * 2, 3 + s * 0.5);
-            }
-            ctx.restore();
-            // Sun glow
-            const sg = ctx.createRadialGradient(sunX, sunY, sunR * 0.5, sunX, sunY, sunR * 1.5);
-            sg.addColorStop(0, `rgba(${r},${g},${b},0.35)`);
-            sg.addColorStop(1, 'transparent');
-            ctx.fillStyle = sg; ctx.fillRect(0, 0, W, H);
-            // Horizontal lines (toward viewer)
-            hLines.forEach(l => {
-                l.y += l.speed;
-                if (l.y > H) l.y = 0;
-                const yy = horizon + l.y;
-                const pulse = Math.sin(t * 2.5 + l.y * 0.02) * 0.1 + 0.25;
-                ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(W, yy);
-                ctx.strokeStyle = `rgba(${r},${g},${b},${pulse.toFixed(2)})`;
-                ctx.lineWidth = 1.2; ctx.stroke();
+            // Sort by z (far first so close ones draw over)
+            palmPool.sort((a, b) => a.z - b.z);
+            palmPool.forEach(p => {
+                p.z += p.speed;
+                if (p.z > 1.5) {
+                    // Respawn far at horizon with new random x
+                    p.z = 0;
+                    p.x = Math.random();
+                    p.speed = 0.004 + Math.random() * 0.003;
+                    p.height = 0.22 + Math.random() * 0.1;
+                    p.trunk = 0.14 + Math.random() * 0.06;
+                }
+                // Perspective: z=0 is on horizon (small), z=1 is close to viewer (large)
+                const scale = 0.08 + p.z * 0.95; // 0.08 at horizon, ~1 at close
+                const screenX = p.x * W;
+                // Palm y: from horizon (at z=0) to bottom of screen (at z=1)
+                const screenY = horizon + (H - horizon) * Math.pow(p.z, 0.8);
+                // Only draw if in front of viewer
+                if (p.z > 0.02) {
+                    const ph = H * p.height * scale;
+                    const pt = H * p.trunk * scale;
+                    drawPalm(screenX, screenY, ph, pt, scale);
+                }
             });
-            // Vertical lines (from vanishing point)
-            for (let x = -(offset % 60); x < W + 60; x += 60) {
-                const bx = vpX + (x - vpX) * 2.5;
-                const alpha = 0.18 + Math.sin(t * 1.5 + x * 0.01) * 0.05;
-                ctx.beginPath(); ctx.moveTo(vpX, vpY); ctx.lineTo(bx, H);
-                ctx.strokeStyle = `rgba(${r},${g},${b},${alpha.toFixed(2)})`;
-                ctx.lineWidth = 1.2; ctx.stroke();
+            // ── Scanlines ──
+            for (let y = 0; y < H; y += 3) {
+                ctx.fillStyle = 'rgba(0,0,0,0.08)'; ctx.fillRect(0, y, W, 1);
             }
-            // Horizon glow
-            ctx.beginPath(); ctx.moveTo(0, horizon); ctx.lineTo(W, horizon);
-            ctx.strokeStyle = `rgba(${r},${g},${b},0.7)`; ctx.lineWidth = 2.5; ctx.stroke();
-            // Palms
-            palms.forEach(p => { drawPalm(W * p.x, H, p.height, p.trunk); });
-            // Scanlines
-            for (let y = 0; y < H; y += 4) {
-                ctx.fillStyle = 'rgba(0,0,0,0.04)'; ctx.fillRect(0, y, W, 1.5);
-            }
-            // Glitch
-            if (Math.random() < 0.018) {
-                ctx.fillStyle = `rgba(${(r+100)%255},${(g+80)%255},${(b+120)%255},0.25)`;
+            // ── Occasional glitch bar ──
+            if (Math.random() < 0.015) {
+                ctx.fillStyle = 'rgba(255,0,200,0.2)';
                 ctx.fillRect(0, Math.random() * H, W, Math.random() * 3 + 1);
             }
-            // Top bar
-            ctx.fillStyle = ctx.createLinearGradient(0, 0, 0, 3);
-            ctx.fillRect(0, 0, W, 3);
-            offset += 0.4;
+            offset += 0.5;
             animFrame = requestAnimationFrame(drawCyber);
         }
         drawCyber();
