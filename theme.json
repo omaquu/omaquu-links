@@ -13,11 +13,5 @@
     "animationSpeed": "10",
     "bgGradient1": "#0000ff",
     "bgGradient2": "#ff00ff",
-    "bgGradientAngle": "90",
-    "accentGlow": "rgba(255,0,255,0.3)",
-    "cardStyle": {
-        "borderRadius": "4px",
-        "shadow": "0 2px 4px rgba(255,0,255,0.5)"
-    },
-    "intro": "slide"
+    "bgGradientAngle": "90"
 }
