@@ -273,10 +273,11 @@ body {
 .link-card[style*="--link-accent"]:hover { border-color: var(--link-accent); }
 .link-card[style*="--link-accent"]::before { background: var(--link-accent); }
 
-.link-card.stream:hover { border-color: var(--live); }
-.link-card.stream::before { background: var(--live); }
-.link-card.support:hover { border-color: var(--success); }
-.link-card.support::before { background: var(--success); }
+/* Stream/support categories respect per-link color too */
+.link-card.stream[style*="--link-accent"]:hover { border-color: var(--link-accent); }
+.link-card.stream[style*="--link-accent"]::before { background: var(--link-accent); }
+.link-card.support[style*="--link-accent"]:hover { border-color: var(--link-accent); }
+.link-card.support[style*="--link-accent"]::before { background: var(--link-accent); }
 
 .link-icon {
     width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;

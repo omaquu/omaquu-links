@@ -412,6 +412,7 @@
       <h2>Teema-värit</h2>
       <div class="grid-2">
         <div><label>Accent</label><input type="color" id="tAccent" onchange="saveTheme();updateThemePreview()"></div>
+        <div><label>Live color (Kick/Twitch)</label><input type="color" id="tLiveColor" onchange="saveTheme();updateThemePreview()"></div>
         <div><label>Animation color</label><input type="color" id="tAnim" onchange="saveTheme();updateThemePreview()"></div>
         <div><label>bgPrimary</label><input type="color" id="tBg1" onchange="saveTheme();updateThemePreview()"></div>
         <div><label>bgSecondary</label><input type="color" id="tBg2" onchange="saveTheme();updateThemePreview()"></div>
@@ -963,8 +964,9 @@ function hex(name, val) {
 }
 async function loadTheme() {
   const t = await api('/theme');
-  hex('tAccent',   t.accent);
-  hex('tBg1',      t.bgPrimary);
+  hex('tAccent',    t.accent);
+  hex('tLiveColor',  t.live);
+  hex('tBg1',        t.bgPrimary);
   hex('tBg2',      t.bgSecondary);
   hex('tCard',     t.bgCard);
   hex('tCardH',    t.bgCardHover);
@@ -982,8 +984,9 @@ async function loadTheme() {
 }
 function themePayload() {
   return {
-    accent:         hex('tAccent'),
-    bgPrimary:      hex('tBg1'),
+    accent: hex('tAccent'),
+    live: hex('tLiveColor'),
+    bgPrimary: hex('tBg1'),
     bgSecondary:    hex('tBg2'),
     bgCard:         hex('tCard'),
     bgCardHover:    hex('tCardH'),
