@@ -102,16 +102,6 @@
             "sort_order": 5,
             "clicks": 0,
             "color": "#ffffff"
-        },
-        {
-            "title": "YouTube",
-            "url": "https://www.youtube.com/@omaquu",
-            "embedType": "",
-            "embedValue": "",
-            "color": "#ff6b35",
-            "tags": "",
-            "sort_order": 999,
-            "id": "9c11e981"
         }
     ],
     "codes": [
