@@ -462,17 +462,22 @@ function startBgAnimation(type, color) {
             const vpX = W / 2;
             // ── ABOVE HORIZON: gradient sky ──
             const skyGrad = ctx.createLinearGradient(0, 0, 0, horizon);
-            skyGrad.addColorStop(0, 'rgba(5,5,20,1)');
-            skyGrad.addColorStop(0.4, 'rgba(15,0,35,1)');
-            skyGrad.addColorStop(1, 'rgba(30,0,50,1)');
+            skyGrad.addColorStop(0, 'rgba(10,5,30,1)');
+            skyGrad.addColorStop(0.5, 'rgba(20,0,50,1)');
+            skyGrad.addColorStop(1, 'rgba(40,0,60,1)');
             ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, W, horizon);
-            // ── SUN: orange, sits on horizon ──
+            // ── SUN: orange, sits on horizon, with extra glow ──
             const sunX = W / 2, sunY = horizon, sunR = 70;
+            // Outer glow
+            const sg2 = ctx.createRadialGradient(sunX, sunY - sunR * 0.3, sunR * 0.5, sunX, sunY - sunR * 0.3, sunR * 3);
+            sg2.addColorStop(0, 'rgba(255,150,0,0.4)'); sg2.addColorStop(0.5, 'rgba(255,80,0,0.15)'); sg2.addColorStop(1, 'transparent');
+            ctx.fillStyle = sg2; ctx.fillRect(0, 0, W, horizon);
+            // Inner glow
             const sg = ctx.createRadialGradient(sunX, sunY - sunR * 0.3, sunR * 0.2, sunX, sunY - sunR * 0.3, sunR * 1.8);
-            sg.addColorStop(0, 'rgba(255,140,0,0.5)'); sg.addColorStop(0.4, 'rgba(255,100,0,0.2)'); sg.addColorStop(1, 'transparent');
+            sg.addColorStop(0, 'rgba(255,160,0,0.6)'); sg.addColorStop(0.5, 'rgba(255,100,0,0.3)'); sg.addColorStop(1, 'transparent');
             ctx.fillStyle = sg; ctx.fillRect(0, 0, W, horizon);
             ctx.beginPath(); ctx.arc(sunX, sunY - sunR * 0.3, sunR, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(255,120,0,0.9)'; ctx.fill();
+            ctx.fillStyle = 'rgba(255,130,0,0.95)'; ctx.fill();
             ctx.save();
             ctx.beginPath(); ctx.arc(sunX, sunY - sunR * 0.3, sunR, 0, Math.PI * 2); ctx.clip();
             for (let s = 0; s < 10; s++) {
@@ -490,7 +495,7 @@ function startBgAnimation(type, color) {
             const ground = ctx.createLinearGradient(0, horizon, 0, H);
             ground.addColorStop(0, 'rgba(20,0,30,1)'); ground.addColorStop(1, 'rgba(5,0,15,1)');
             ctx.fillStyle = ground; ctx.fillRect(0, horizon, W, H - horizon);
-            // Only horizontal lines (one wireframe effect, no verticals)
+            // Only horizontal lines (one wireframe effect)
             const hLines = Array.from({length: 12}, () => ({ y: Math.random(), speed: Math.random() * 0.002 + 0.001 }));
             hLines.forEach(l => {
                 l.y += l.speed;
@@ -501,6 +506,16 @@ function startBgAnimation(type, color) {
                 ctx.strokeStyle = `rgba(255,0,200,${pulse.toFixed(2)})`;
                 ctx.lineWidth = 1 + l.y * 1.5; ctx.stroke();
             });
+            // ── Vanishing point verticals (wireframe road) ──
+            const vLines = 20;
+            for (let i = 0; i < vLines; i++) {
+                const frac = (i / (vLines - 1)) - 0.5; // -0.5 to 0.5
+                const bx = vpX + frac * W * 2;
+                const pulse = Math.sin(t * 0.8 + i * 0.3) * 0.06 + 0.18;
+                ctx.beginPath(); ctx.moveTo(vpX, horizon); ctx.lineTo(bx, H);
+                ctx.strokeStyle = `rgba(255,0,200,${pulse.toFixed(2)})`;
+                ctx.lineWidth = 0.8; ctx.stroke();
+            }
             // ── MOVING PALMS: from horizon to viewer, edge to edge ──
             function drawPalm(px, py, ph, pt, scale) {
                 // Neon green palm
