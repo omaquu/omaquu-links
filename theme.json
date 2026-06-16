@@ -7,16 +7,15 @@
     "textPrimary": "#00ff41",
     "textSecondary": "#4ade80",
     "bgImage": "",
-    "bgAnimation": "matrix",
+    "bgAnimation": "ufo",
     "animationColor": "#10b981",
     "animationSpeed": "8",
-    "bgGradient1": "",
-    "bgGradient2": "",
+    "bgGradient1": "#000000",
+    "bgGradient2": "#000000",
     "bgGradientAngle": "180",
     "cardStyle": {
-        "borderRadius": "12px",
-        "shadow": "0 4px 12px rgba(0,0,0,0.4)"
+        "borderRadius": "10px",
+        "shadow": "0 4px 8px rgba(0,0,0,0.3)"
     },
-    "intro": "fade",
-    "accentGlow": "rgba(16,185,129,0.3)"
+    "intro": "fade"
 }
