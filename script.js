@@ -97,6 +97,12 @@ function applyTheme(theme) {
       document.body.style.background = theme.bgPrimary;
     }
 
+    // Card opacity (apply to CSS variable)
+    if (theme.cardOpacity !== undefined) {
+      const opacity = Math.max(0.1, Math.min(1, theme.cardOpacity / 100));
+      root.style.setProperty('--card-opacity', opacity);
+    }
+
     // Background animation
     if (theme.bgAnimation) {
       startBgAnimation(theme.bgAnimation, theme.animationColor || theme.accent || '#ff6b35');

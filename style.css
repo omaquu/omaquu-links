@@ -12,9 +12,9 @@
     --text-secondary: #a0a0b0;
     --text-muted: #606070;
     --border: #2a2a3a;
+    --card-opacity: 1;
     --success: #10b981;
     --live: #ef4444;
-    --card-opacity: 1;
 }
 
 body {
@@ -60,6 +60,7 @@ body {
     min-height: 100vh;
     position: relative;
     z-index: 1;
+    opacity: var(--card-opacity);
 }
 
 /* ═══════════════════════════════════
