@@ -14,6 +14,7 @@
     --border: #2a2a3a;
     --success: #10b981;
     --live: #ef4444;
+    --card-opacity: 1;
 }
 
 body {

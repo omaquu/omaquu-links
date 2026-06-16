@@ -519,9 +519,16 @@ function startBgAnimation(type, color) {
             const vLines = 20;
             for (let i = 0; i < vLines; i++) {
                 const frac = (i / (vLines - 1)) - 0.5; // -0.5 to 0.5
-                const bx = vpX + frac * W * 2;
-                const pulse = Math.sin(t * 0.8 + i * 0.3) * 0.06 + 0.18;
-                ctx.beginPath(); ctx.moveTo(vpX, horizon); ctx.lineTo(bx, H);
+                // Wobble: lines bend slightly to simulate forward motion
+                const wobbleAmp = Math.abs(frac) * 60; // more wobble at edges
+                const wobble = Math.sin(t * 2.5 + i * 0.7) * wobbleAmp;
+                const bx = vpX + frac * W * 2 + wobble;
+                // Draw with 2 control points for slight curve
+                const midX = vpX + frac * W * 1;
+                const midY = horizon + (H - horizon) * 0.5;
+                const pulse = Math.sin(t * 0.8 + i * 0.3) * 0.05 + 0.15;
+                ctx.beginPath(); ctx.moveTo(vpX, horizon);
+                ctx.quadraticCurveTo(midX + wobble * 0.5, midY, bx, H);
                 ctx.strokeStyle = `rgba(255,0,200,${pulse.toFixed(2)})`;
                 ctx.lineWidth = 0.8; ctx.stroke();
             }

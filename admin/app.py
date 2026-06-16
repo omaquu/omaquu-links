@@ -76,7 +76,7 @@ def write_theme(theme):
 def get_default_theme():
     return {"accent": "#ff6b35", "accentGlow": "rgba(255,107,53,0.3)",
             "bgPrimary": "#0a0a0f", "bgSecondary": "#12121a",
-            "bgCard": "#1a1a24", "bgCardHover": "#22222e",
+            "bgCard": "#1a1a24", "bgCardHover": "#22222e", "cardOpacity": 100,
             "textPrimary": "#ffffff", "textSecondary": "#a0a0b0",
             "border": "#2a2a3a", "live": "#ef4444", "success": "#10b981",
             "bgImage": "", "bgAnimation": "", "animationColor": "#ff6b35",
@@ -365,20 +365,20 @@ def update_theme():
 def theme_presets():
     return jsonify({
         # –– Vanhat 10 teemaa ––
-        "orange": {"accent":"#ff6b35","accentGlow":"rgba(255,107,53,0.3)","bgPrimary":"#0a0a0f","bgSecondary":"#12121a","bgCard":"#1a1a24","bgCardHover":"#22222e","textPrimary":"#ffffff","textSecondary":"#a0a0b0","bgAnimation":"","animationColor":"#ff6b35","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"},
-        "purple": {"accent":"#8b5cf6","accentGlow":"rgba(139,92,246,0.3)","bgPrimary":"#0f0a1a","bgSecondary":"#161224","bgCard":"#1e1a2e","bgCardHover":"#262236","textPrimary":"#ffffff","textSecondary":"#c4b5fd","bgAnimation":"particles","animationColor":"#8b5cf6","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"},
-        "matrix": {"accent":"#10b981","accentGlow":"rgba(16,185,129,0.3)","bgPrimary":"#050a05","bgSecondary":"#0a120a","bgCard":"#0f1a0f","bgCardHover":"#162216","textPrimary":"#00ff41","textSecondary":"#4ade80","bgAnimation":"matrix","animationColor":"#10b981","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"},
-        "stars":  {"accent":"#3b82f6","accentGlow":"rgba(59,130,246,0.3)","bgPrimary":"#030812","bgSecondary":"#080d1a","bgCard":"#0e1524","bgCardHover":"#141d2e","textPrimary":"#e0e7ff","textSecondary":"#93c5fd","bgAnimation":"stars","animationColor":"#3b82f6","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"},
-        "midnight":{"accent":"#ec4899","accentGlow":"rgba(236,72,153,0.3)","bgPrimary":"#0a0510","bgSecondary":"#12081a","bgCard":"#1a0e26","bgCardHover":"#22142e","textPrimary":"#fce7f3","textSecondary":"#f9a8d4","bgAnimation":"aurora","animationColor":"#ec4899","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"},
-        "neon":   {"accent":"#00ff41","accentGlow":"rgba(0,255,65,0.3)","bgPrimary":"#020802","bgSecondary":"#04100a","bgCard":"#0a1a10","bgCardHover":"#122418","textPrimary":"#00ff41","textSecondary":"#4ade80","bgAnimation":"grid","animationColor":"#00ff41","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"},
-        "fire":   {"accent":"#ff4500","accentGlow":"rgba(255,69,0,0.3)","bgPrimary":"#0c0402","bgSecondary":"#120804","bgCard":"#1a0e08","bgCardHover":"#24160e","textPrimary":"#fed7aa","textSecondary":"#fdba74","bgAnimation":"fire","animationColor":"#ff4500","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"},
-        "ocean":  {"accent":"#00bcd4","accentGlow":"rgba(0,188,212,0.3)","bgPrimary":"#020808","bgSecondary":"#041210","bgCard":"#081a1e","bgCardHover":"#0e2426","textPrimary":"#cffafe","textSecondary":"#a5f3fc","bgAnimation":"bubbles","animationColor":"#00bcd4","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"},
-        "aurora": {"accent":"#a855f7","accentGlow":"rgba(168,85,247,0.3)","bgPrimary":"#04020a","bgSecondary":"#080614","bgCard":"#100e1e","bgCardHover":"#18142a","textPrimary":"#f5f3ff","textSecondary":"#ddd6fe","bgAnimation":"aurora","animationColor":"#a855f7","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"},
-        "galaxy": {"accent":"#7c3aed","accentGlow":"rgba(124,58,237,0.3)","bgPrimary":"#04020c","bgSecondary":"#080614","bgCard":"#0e0c20","bgCardHover":"#16142e","textPrimary":"#ede9fe","textSecondary":"#c4b5fd","bgAnimation":"galaxy","animationColor":"#7c3aed","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"},
+        "orange": {"accent":"#ff6b35","accentGlow":"rgba(255,107,53,0.3)","bgPrimary":"#0a0a0f","bgSecondary":"#12121a","bgCard":"#1a1a24","bgCardHover":"#22222e","textPrimary":"#ffffff","textSecondary":"#a0a0b0","bgAnimation":"","animationColor":"#ff6b35","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"}, "cardOpacity": 100,
+        "purple": {"accent":"#8b5cf6","accentGlow":"rgba(139,92,246,0.3)","bgPrimary":"#0f0a1a","bgSecondary":"#161224","bgCard":"#1e1a2e","bgCardHover":"#262236","textPrimary":"#ffffff","textSecondary":"#c4b5fd","bgAnimation":"particles","animationColor":"#8b5cf6","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"}, "cardOpacity": 100,
+        "matrix": {"accent":"#10b981","accentGlow":"rgba(16,185,129,0.3)","bgPrimary":"#050a05","bgSecondary":"#0a120a","bgCard":"#0f1a0f","bgCardHover":"#162216","textPrimary":"#00ff41","textSecondary":"#4ade80","bgAnimation":"matrix","animationColor":"#10b981","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"}, "cardOpacity": 100,
+        "stars":  {"accent":"#3b82f6","accentGlow":"rgba(59,130,246,0.3)","bgPrimary":"#030812","bgSecondary":"#080d1a","bgCard":"#0e1524","bgCardHover":"#141d2e","textPrimary":"#e0e7ff","textSecondary":"#93c5fd","bgAnimation":"stars","animationColor":"#3b82f6","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"}, "cardOpacity": 100,
+        "midnight":{"accent":"#ec4899","accentGlow":"rgba(236,72,153,0.3)","bgPrimary":"#0a0510","bgSecondary":"#12081a","bgCard":"#1a0e26","bgCardHover":"#22142e","textPrimary":"#fce7f3","textSecondary":"#f9a8d4","bgAnimation":"aurora","animationColor":"#ec4899","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"}, "cardOpacity": 100,
+        "neon":   {"accent":"#00ff41","accentGlow":"rgba(0,255,65,0.3)","bgPrimary":"#020802","bgSecondary":"#04100a","bgCard":"#0a1a10","bgCardHover":"#122418","textPrimary":"#00ff41","textSecondary":"#4ade80","bgAnimation":"grid","animationColor":"#00ff41","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"}, "cardOpacity": 100,
+        "fire":   {"accent":"#ff4500","accentGlow":"rgba(255,69,0,0.3)","bgPrimary":"#0c0402","bgSecondary":"#120804","bgCard":"#1a0e08","bgCardHover":"#24160e","textPrimary":"#fed7aa","textSecondary":"#fdba74","bgAnimation":"fire","animationColor":"#ff4500","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"}, "cardOpacity": 100,
+        "ocean":  {"accent":"#00bcd4","accentGlow":"rgba(0,188,212,0.3)","bgPrimary":"#020808","bgSecondary":"#041210","bgCard":"#081a1e","bgCardHover":"#0e2426","textPrimary":"#cffafe","textSecondary":"#a5f3fc","bgAnimation":"bubbles","animationColor":"#00bcd4","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"}, "cardOpacity": 100,
+        "aurora": {"accent":"#a855f7","accentGlow":"rgba(168,85,247,0.3)","bgPrimary":"#04020a","bgSecondary":"#080614","bgCard":"#100e1e","bgCardHover":"#18142a","textPrimary":"#f5f3ff","textSecondary":"#ddd6fe","bgAnimation":"aurora","animationColor":"#a855f7","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"}, "cardOpacity": 100,
+        "galaxy": {"accent":"#7c3aed","accentGlow":"rgba(124,58,237,0.3)","bgPrimary":"#04020c","bgSecondary":"#080614","bgCard":"#0e0c20","bgCardHover":"#16142e","textPrimary":"#ede9fe","textSecondary":"#c4b5fd","bgAnimation":"galaxy","animationColor":"#7c3aed","animationSpeed":"8","bgGradient1":"","bgGradient2":"","bgGradientAngle":"180"}, "cardOpacity": 100,
         # –– Uudet 4 teemaa ––
         "default": {
             "accent": "#ec4899", "accentGlow": "rgba(236,72,153,0.3)", "bgPrimary": "#0a0510",
-            "bgSecondary": "#12081a", "bgCard": "#1a0e26", "bgCardHover": "#22142e",
+            "bgSecondary": "#12081a", "bgCard": "#1a0e26", "bgCardHover": "#22142e", "cardOpacity": 100,
             "textPrimary": "#fce7f3", "textSecondary": "#f9a8d4", "bgAnimation": "aurora",
             "animationColor": "#ec4899", "animationSpeed": "8", "bgGradient1": "", "bgGradient2": "",
             "bgGradientAngle": "180",
@@ -387,7 +387,7 @@ def theme_presets():
         },
         "x-files": {
             "accent": "#10b981", "accentGlow": "rgba(16,185,129,0.3)", "bgPrimary": "#050a05",
-            "bgSecondary": "#0a120a", "bgCard": "#0f1a0f", "bgCardHover": "#162216",
+            "bgSecondary": "#0a120a", "bgCard": "#0f1a0f", "bgCardHover": "#162216", "cardOpacity": 100,
             "textPrimary": "#00ff41", "textSecondary": "#4ade80", "bgAnimation": "matrix",
             "animationColor": "#10b981", "animationSpeed": "8", "bgGradient1": "", "bgGradient2": "",
             "bgGradientAngle": "180",
@@ -396,7 +396,7 @@ def theme_presets():
         },
         "autumn-forest": {
             "accent": "#8b5e3c", "accentGlow": "rgba(139,94,60,0.3)", "bgPrimary": "#1b120b",
-            "bgSecondary": "#261a12", "bgCard": "#342518", "bgCardHover": "#422e1f",
+            "bgSecondary": "#261a12", "bgCard": "#342518", "bgCardHover": "#422e1f", "cardOpacity": 100,
             "textPrimary": "#f8f4e9", "textSecondary": "#e8d8c3", "bgAnimation": "particles",
             "animationColor": "#8b5e3c", "animationSpeed": "6", "bgGradient1": "#2c1e11",
             "bgGradient2": "#1b120b", "bgGradientAngle": "45",
@@ -405,7 +405,7 @@ def theme_presets():
         },
         "cyberpunk": {
             "accent": "#ff00ff", "accentGlow": "rgba(255,0,255,0.3)", "bgPrimary": "#0a000a",
-            "bgSecondary": "#120012", "bgCard": "#1a001a", "bgCardHover": "#240024",
+            "bgSecondary": "#120012", "bgCard": "#1a001a", "bgCardHover": "#240024", "cardOpacity": 100,
             "textPrimary": "#ffffff", "textSecondary": "#ff00ff", "bgAnimation": "grid",
             "animationColor": "#ff00ff", "animationSpeed": "10", "bgGradient1": "#0000ff",
             "bgGradient2": "#ff00ff", "bgGradientAngle": "90",

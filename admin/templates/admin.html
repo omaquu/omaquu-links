@@ -418,6 +418,11 @@
         <div><label>bgSecondary</label><input type="color" id="tBg2" onchange="saveTheme();updateThemePreview()"></div>
         <div><label>bgCard</label><input type="color" id="tCard" onchange="saveTheme();updateThemePreview()"></div>
         <div><label>bgCardHover</label><input type="color" id="tCardH" onchange="saveTheme();updateThemePreview()"></div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <label>Card opacity: <span id="cardOpacityVal">100</span>%</label>
+          <input type="range" id="tCardOpacity" min="20" max="100" value="100" style="width:120px"
+            oninput="document.getElementById('cardOpacityVal').textContent=this.value;saveTheme()">
+        </div>
         <div><label>textPrimary</label><input type="color" id="tTxt" onchange="saveTheme();updateThemePreview()"></div>
         <div><label>textSecondary</label><input type="color" id="tTxt2" onchange="saveTheme();updateThemePreview()"></div>
       </div>
@@ -970,6 +975,9 @@ async function loadTheme() {
   hex('tBg2',      t.bgSecondary);
   hex('tCard',     t.bgCard);
   hex('tCardH',    t.bgCardHover);
+  const cardOpacity = t.cardOpacity !== undefined ? t.cardOpacity : 100;
+  document.getElementById('tCardOpacity').value = cardOpacity;
+  document.getElementById('cardOpacityVal').textContent = cardOpacity;
   hex('tTxt',      t.textPrimary);
   hex('tTxt2',     t.textSecondary);
   hex('tAnim',     t.animationColor);
@@ -990,6 +998,7 @@ function themePayload() {
     bgSecondary:    hex('tBg2'),
     bgCard:         hex('tCard'),
     bgCardHover:    hex('tCardH'),
+    cardOpacity:    parseInt(document.getElementById('tCardOpacity').value) || 100,
     textPrimary:    hex('tTxt'),
     textSecondary:  hex('tTxt2'),
     bgImage:        document.getElementById('tBgImage').value,
