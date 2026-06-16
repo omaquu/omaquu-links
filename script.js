@@ -1045,7 +1045,6 @@ if (document.readyState === 'loading') {
 }
 
 // ─── FALLBACK ─────────────────────────────────────────────────────────────
-}
 function getFallbackData() {
     return {
         profile: { username: '@omaquu', displayName: 'omaquu', bio: 'Someloukkaantuja', avatar: '', quickLinks: [] },
@@ -1063,4 +1062,5 @@ function getFallbackData() {
         ],
         streamAlwaysVisible: false
     };
+}
 }
