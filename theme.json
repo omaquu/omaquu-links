@@ -1,5 +1,6 @@
 {
     "accent": "#ff00ff",
+    "live": "#000000",
     "bgPrimary": "#0a000a",
     "bgSecondary": "#120012",
     "bgCard": "#1a001a",
@@ -7,10 +8,16 @@
     "textPrimary": "#ffffff",
     "textSecondary": "#ff00ff",
     "bgImage": "",
-    "bgAnimation": "cyberpunk",
+    "bgAnimation": "grid",
     "animationColor": "#ff00ff",
     "animationSpeed": "10",
     "bgGradient1": "#0000ff",
     "bgGradient2": "#ff00ff",
-    "bgGradientAngle": "90"
+    "bgGradientAngle": "90",
+    "accentGlow": "rgba(255,0,255,0.3)",
+    "cardStyle": {
+        "borderRadius": "4px",
+        "shadow": "0 2px 4px rgba(255,0,255,0.5)"
+    },
+    "intro": "slide"
 }
