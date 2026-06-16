@@ -444,14 +444,15 @@ function startBgAnimation(type, color) {
 
     } else if (type === 'cyberpunk') {
         let offset = 0;
-        // Palm pool: 8 palms with z-depth (0=far/horizon, 1=close/viewer)
-        const palmPool = Array.from({length: 8}, (_, i) => ({
-            x: Math.random(), // horizontal position (0=left, 1=right)
-            z: Math.random(),  // depth (0=far, 1=close)
-            speed: 0.004 + Math.random() * 0.003, // forward speed
+        // Palm pool: 4 palms, move from edges across screen
+        const palmPool = Array.from({length: 4}, (_, i) => ({
+            x: Math.random() < 0.5 ? -0.15 : 1.15, // start off-screen left or right
+            z: 0, // depth (0=far/horizon, 1=close/viewer)
+            speed: 0.002 + Math.random() * 0.002, // forward speed (z)
+            hSpeed: 0.001 + Math.random() * 0.001, // horizontal speed
+            dir: Math.random() < 0.5 ? 1 : -1, // direction: 1=left→right, -1=right→left
             height: 0.22 + Math.random() * 0.1,
             trunk: 0.14 + Math.random() * 0.06,
-            lean: (Math.random() - 0.5) * 0.15, // slight lean
         }));
         function drawCyber() {
             const t = Date.now() / 1000;
@@ -459,18 +460,17 @@ function startBgAnimation(type, color) {
             ctx.clearRect(0, 0, W, H);
             const horizon = H * 0.5;
             const vpX = W / 2;
-            // ── ABOVE HORIZON: static dark sky ──
-            ctx.fillStyle = 'rgba(5,5,15,1)';
-            ctx.fillRect(0, 0, W, horizon);
+            // ── ABOVE HORIZON: gradient sky ──
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, horizon);
+            skyGrad.addColorStop(0, 'rgba(5,5,20,1)');
+            skyGrad.addColorStop(0.4, 'rgba(15,0,35,1)');
+            skyGrad.addColorStop(1, 'rgba(30,0,50,1)');
+            ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, W, horizon);
             // ── SUN: orange, sits on horizon ──
             const sunX = W / 2, sunY = horizon, sunR = 70;
-            // Sun glow (orange)
             const sg = ctx.createRadialGradient(sunX, sunY - sunR * 0.3, sunR * 0.2, sunX, sunY - sunR * 0.3, sunR * 1.8);
-            sg.addColorStop(0, 'rgba(255,140,0,0.5)');
-            sg.addColorStop(0.4, 'rgba(255,100,0,0.2)');
-            sg.addColorStop(1, 'transparent');
+            sg.addColorStop(0, 'rgba(255,140,0,0.5)'); sg.addColorStop(0.4, 'rgba(255,100,0,0.2)'); sg.addColorStop(1, 'transparent');
             ctx.fillStyle = sg; ctx.fillRect(0, 0, W, horizon);
-            // Sun body with horizontal stripes
             ctx.beginPath(); ctx.arc(sunX, sunY - sunR * 0.3, sunR, 0, Math.PI * 2);
             ctx.fillStyle = 'rgba(255,120,0,0.9)'; ctx.fill();
             ctx.save();
@@ -478,45 +478,30 @@ function startBgAnimation(type, color) {
             for (let s = 0; s < 10; s++) {
                 const sy = sunY - sunR * 0.3 - sunR + (s / 10) * sunR * 2;
                 const sh = 2 + s * 0.8;
-                ctx.fillStyle = `rgba(20,5,35,${0.3 + s * 0.07})`;
-                ctx.fillRect(sunX - sunR, sy, sunR * 2, sh);
+                ctx.fillStyle = `rgba(20,5,35,${0.3 + s * 0.07})`; ctx.fillRect(sunX - sunR, sy, sunR * 2, sh);
             }
             ctx.restore();
-            // ── HORIZON LINE: bright neon glow ──
+            // ── HORIZON LINE: neon glow ──
             ctx.beginPath(); ctx.moveTo(0, horizon); ctx.lineTo(W, horizon);
             ctx.strokeStyle = 'rgba(255,0,200,0.9)'; ctx.lineWidth = 3; ctx.stroke();
-            // Extra horizon glow
             ctx.beginPath(); ctx.moveTo(0, horizon); ctx.lineTo(W, horizon);
             ctx.strokeStyle = 'rgba(255,0,200,0.3)'; ctx.lineWidth = 8; ctx.stroke();
             // ── BELOW HORIZON: animated synthwave ground ──
-            // Ground base
             const ground = ctx.createLinearGradient(0, horizon, 0, H);
-            ground.addColorStop(0, 'rgba(20,0,30,1)');
-            ground.addColorStop(1, 'rgba(5,0,15,1)');
+            ground.addColorStop(0, 'rgba(20,0,30,1)'); ground.addColorStop(1, 'rgba(5,0,15,1)');
             ctx.fillStyle = ground; ctx.fillRect(0, horizon, W, H - horizon);
-            // Moving horizontal lines (toward viewer = from horizon outward)
-            const hLines = Array.from({length: 18}, () => ({ y: Math.random(), speed: Math.random() * 0.003 + 0.0015 }));
+            // Only horizontal lines (one wireframe effect, no verticals)
+            const hLines = Array.from({length: 12}, () => ({ y: Math.random(), speed: Math.random() * 0.002 + 0.001 }));
             hLines.forEach(l => {
                 l.y += l.speed;
                 if (l.y > 1) l.y = 0;
-                // Perspective: lines closer to horizon are more compressed
                 const yy = horizon + Math.pow(l.y, 1.5) * (H - horizon);
-                const pulse = Math.sin(t * 2 + l.y * 8) * 0.15 + 0.5;
+                const pulse = Math.sin(t * 1.2 + l.y * 5) * 0.08 + 0.25;
                 ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(W, yy);
                 ctx.strokeStyle = `rgba(255,0,200,${pulse.toFixed(2)})`;
                 ctx.lineWidth = 1 + l.y * 1.5; ctx.stroke();
             });
-            // Vertical perspective lines (from vanishing point outward)
-            const sp = 80;
-            for (let i = 0; i < 16; i++) {
-                const frac = (i / 15) - 0.5; // -0.5 to 0.5
-                const bx = W / 2 + frac * W * 2.2;
-                const pulse = Math.sin(t * 1.5 + i) * 0.1 + 0.4;
-                ctx.beginPath(); ctx.moveTo(vpX, horizon); ctx.lineTo(bx, H);
-                ctx.strokeStyle = `rgba(255,0,200,${pulse.toFixed(2)})`;
-                ctx.lineWidth = 1 + Math.abs(frac) * 1.5; ctx.stroke();
-            }
-            // ── MOVING PALMS: from horizon to viewer ──
+            // ── MOVING PALMS: from horizon to viewer, edge to edge ──
             function drawPalm(px, py, ph, pt, scale) {
                 // Neon green palm
                 const green = 'rgba(0,255,120,';
@@ -560,17 +545,21 @@ function startBgAnimation(type, color) {
             palmPool.sort((a, b) => a.z - b.z);
             palmPool.forEach(p => {
                 p.z += p.speed;
-                if (p.z > 1.5) {
-                    // Respawn far at horizon with new random x
+                p.x += p.dir * p.hSpeed * (0.3 + p.z * 0.7); // moves faster when closer
+                // Respawn: when past screen or too close
+                if (p.z > 1.2 || p.x < -0.25 || p.x > 1.25) {
                     p.z = 0;
-                    p.x = Math.random();
-                    p.speed = 0.004 + Math.random() * 0.003;
+                    p.dir = Math.random() < 0.5 ? 1 : -1;
+                    p.x = p.dir > 0 ? -0.15 : 1.15;
+                    p.hSpeed = 0.001 + Math.random() * 0.001;
+                    p.speed = 0.002 + Math.random() * 0.002;
                     p.height = 0.22 + Math.random() * 0.1;
                     p.trunk = 0.14 + Math.random() * 0.06;
                 }
                 // Perspective: z=0 is on horizon (small), z=1 is close to viewer (large)
                 const scale = 0.08 + p.z * 0.95; // 0.08 at horizon, ~1 at close
                 const screenX = p.x * W;
+                if (screenX < -200 || screenX > W + 200) return; // off screen, skip
                 // Palm y: from horizon (at z=0) to bottom of screen (at z=1)
                 const screenY = horizon + (H - horizon) * Math.pow(p.z, 0.8);
                 // Only draw if in front of viewer
@@ -580,14 +569,9 @@ function startBgAnimation(type, color) {
                     drawPalm(screenX, screenY, ph, pt, scale);
                 }
             });
-            // ── Scanlines ──
-            for (let y = 0; y < H; y += 3) {
-                ctx.fillStyle = 'rgba(0,0,0,0.08)'; ctx.fillRect(0, y, W, 1);
-            }
-            // ── Occasional glitch bar ──
-            if (Math.random() < 0.015) {
-                ctx.fillStyle = 'rgba(255,0,200,0.2)';
-                ctx.fillRect(0, Math.random() * H, W, Math.random() * 3 + 1);
+            // ── Scanlines (subtle)
+            for (let y = 0; y < H; y += 5) {
+                ctx.fillStyle = 'rgba(0,0,0,0.05)'; ctx.fillRect(0, y, W, 1);
             }
             offset += 0.5;
             animFrame = requestAnimationFrame(drawCyber);
