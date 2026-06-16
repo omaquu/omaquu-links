@@ -445,156 +445,111 @@ function startBgAnimation(type, color) {
     } else if (type === 'cyberpunk') {
         let offset = 0;
         const hLines = Array.from({length: 20}, () => ({ y: Math.random() * canvas.height * 0.5, speed: Math.random() * 2 + 1 }));
-        // Palm tree data: {side: 'left'/'right', xOffset}
-        const palms = [
-            { side: 'left', x: 0.12, height: canvas.height * 0.28, trunk: canvas.height * 0.18 },
-            { side: 'right', x: 0.88, height: canvas.height * 0.25, trunk: canvas.height * 0.16 },
-            { side: 'left', x: 0.28, height: canvas.height * 0.2, trunk: canvas.height * 0.13 },
-            { side: 'right', x: 0.72, height: canvas.height * 0.22, trunk: canvas.height * 0.14 },
-        ];
-        function drawPalm(px, py, ph, pt) {
-            // Trunk
-            ctx.strokeStyle = `rgba(${r},${g},${b},0.7)`;
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.moveTo(px, py);
-            ctx.quadraticCurveTo(px + (Math.sin(t * 0.8) * 3), py - pt * 0.5, px, py - pt);
-            ctx.stroke();
-            // Trunk texture lines
-            for (let tt = 0; tt < 5; tt++) {
-                const ty = py - tt * (pt / 5);
-                const txw = 3;
-                ctx.strokeStyle = `rgba(${r},${g},${b},0.4)`;
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(px - txw, ty);
-                ctx.lineTo(px + txw, ty);
-                ctx.stroke();
-            }
-            // Leaves
-            const leafCount = 7;
-            const topX = px, topY = py - pt;
-            for (let l = 0; l < leafCount; l++) {
-                const angle = -Math.PI / 2 + (l / (leafCount - 1) - 0.5) * 1.6;
-                const len = ph * 0.9;
-                const ex = topX + Math.cos(angle) * len;
-                const ey = topY + Math.sin(angle) * len;
-                const ctrl1x = topX + Math.cos(angle - 0.4) * len * 0.4;
-                const ctrl1y = topY + Math.sin(angle - 0.4) * len * 0.4 + 15;
-                const ctrl2x = topX + Math.cos(angle + 0.4) * len * 0.4;
-                const ctrl2y = topY + Math.sin(angle + 0.4) * len * 0.4 + 15;
-                ctx.beginPath();
-                ctx.moveTo(topX, topY);
-                ctx.bezierCurveTo(ctrl1x, ctrl1y, ctrl2x, ctrl2y, ex, ey);
-                ctx.strokeStyle = `rgba(${r},${g},${b},0.6)`;
-                ctx.lineWidth = 2;
-                ctx.stroke();
-            }
-        }
         function drawCyber() {
             const t = Date.now() / 1000;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Sky gradient (full sky above horizon)
-            const sky = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.5);
-            sky.addColorStop(0, `rgba(${r},${g},${b},0.2)`);
+            const W = canvas.width, H = canvas.height;
+            ctx.clearRect(0, 0, W, H);
+            const horizon = H * 0.5;
+            const vpX = W / 2, vpY = horizon * 0.3;
+            // Palm data computed inside (uses live canvas size)
+            const palms = [
+                { x: 0.10, height: H * 0.26, trunk: H * 0.17 },
+                { x: 0.90, height: H * 0.23, trunk: H * 0.15 },
+                { x: 0.25, height: H * 0.19, trunk: H * 0.12 },
+                { x: 0.75, height: H * 0.21, trunk: H * 0.13 },
+            ];
+            function drawPalm(px, py, ph, pt) {
+                ctx.strokeStyle = `rgba(${r},${g},${b},0.7)`;
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(px, py);
+                ctx.quadraticCurveTo(px + Math.sin(t * 0.7) * 4, py - pt * 0.5, px, py - pt);
+                ctx.stroke();
+                for (let tt = 0; tt < 5; tt++) {
+                    const ty = py - tt * (pt / 5);
+                    ctx.strokeStyle = `rgba(${r},${g},${b},0.35)`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(px - 4, ty); ctx.lineTo(px + 4, ty); ctx.stroke();
+                }
+                const topX = px, topY = py - pt;
+                for (let l = 0; l < 7; l++) {
+                    const angle = -Math.PI / 2 + (l / 6 - 0.5) * 1.6;
+                    const len = ph * 0.85;
+                    const ex = topX + Math.cos(angle) * len, ey = topY + Math.sin(angle) * len;
+                    ctx.beginPath(); ctx.moveTo(topX, topY);
+                    ctx.bezierCurveTo(
+                        topX + Math.cos(angle - 0.35) * len * 0.4, topY + Math.sin(angle - 0.35) * len * 0.4 + 12,
+                        topX + Math.cos(angle + 0.35) * len * 0.4, topY + Math.sin(angle + 0.35) * len * 0.4 + 12,
+                        ex, ey
+                    );
+                    ctx.strokeStyle = `rgba(${r},${g},${b},0.55)`;
+                    ctx.lineWidth = 2; ctx.stroke();
+                }
+            }
+            // Sky gradient
+            const sky = ctx.createLinearGradient(0, 0, 0, horizon);
+            sky.addColorStop(0, `rgba(${r},${g},${b},0.22)`);
             sky.addColorStop(0.6, `rgba(${r},${g},${b},0.08)`);
             sky.addColorStop(1, 'transparent');
-            ctx.fillStyle = sky;
-            ctx.fillRect(0, 0, canvas.width, canvas.height * 0.5);
-            // Horizon at 50%
-            const horizon = canvas.height * 0.5;
-            const vpY = horizon * 0.3; // Vanishing point (30% from top)
-            const vpX = canvas.width / 2;
-            // Ground gradient (below horizon)
-            const ground = ctx.createLinearGradient(0, horizon, 0, canvas.height);
-            ground.addColorStop(0, `rgba(${r},${g},${b},0.1)`);
-            ground.addColorStop(1, `rgba(${r},${g},${b},0.3)`);
-            ctx.fillStyle = ground;
-            ctx.fillRect(0, horizon, canvas.width, canvas.height - horizon);
-            // Sun with horizontal stripes (classic synthwave)
-            const sunX = canvas.width / 2, sunY = horizon - 15, sunR = 85;
-            ctx.beginPath();
-            ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(${r},${g},${b},0.5)`;
-            ctx.fill();
-            // Sun stripes
+            ctx.fillStyle = sky; ctx.fillRect(0, 0, W, horizon);
+            // Ground gradient
+            const ground = ctx.createLinearGradient(0, horizon, 0, H);
+            ground.addColorStop(0, `rgba(${r},${g},${b},0.08)`);
+            ground.addColorStop(1, `rgba(${r},${g},${b},0.28)`);
+            ctx.fillStyle = ground; ctx.fillRect(0, horizon, W, H - horizon);
+            // Sun with stripes
+            const sunX = W / 2, sunY = horizon - 15, sunR = 80;
+            ctx.beginPath(); ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${r},${g},${b},0.45)`; ctx.fill();
             ctx.save();
-            ctx.beginPath();
-            ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);
-            ctx.clip();
-            const stripeCount = 14;
-            for (let s = 0; s < stripeCount; s++) {
-                const sy = sunY - sunR + (s / stripeCount) * sunR * 2;
-                const sh = 3 + s * 0.5;
-                ctx.fillStyle = `rgba(10,10,15,${0.3 + s * 0.05})`;
-                ctx.fillRect(sunX - sunR, sy, sunR * 2, sh);
+            ctx.beginPath(); ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2); ctx.clip();
+            for (let s = 0; s < 14; s++) {
+                const sy = sunY - sunR + (s / 14) * sunR * 2;
+                ctx.fillStyle = `rgba(10,10,20,${0.28 + s * 0.05})`;
+                ctx.fillRect(sunX - sunR, sy, sunR * 2, 3 + s * 0.5);
             }
             ctx.restore();
             // Sun glow
-            const sg = ctx.createRadialGradient(sunX, sunY, sunR * 0.5, sunX, sunY, sunR * 1.4);
-            sg.addColorStop(0, `rgba(${r},${g},${b},0.3)`);
+            const sg = ctx.createRadialGradient(sunX, sunY, sunR * 0.5, sunX, sunY, sunR * 1.5);
+            sg.addColorStop(0, `rgba(${r},${g},${b},0.35)`);
             sg.addColorStop(1, 'transparent');
-            ctx.fillStyle = sg;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            // Horizontal grid lines (move TOWARD viewer = from horizon to bottom)
+            ctx.fillStyle = sg; ctx.fillRect(0, 0, W, H);
+            // Horizontal lines (toward viewer)
             hLines.forEach(l => {
                 l.y += l.speed;
-                if (l.y > canvas.height) { l.y = 0; }
+                if (l.y > H) l.y = 0;
                 const yy = horizon + l.y;
-                const pulse = Math.sin(t * 2.5 + l.y * 0.02) * 0.12 + 0.28;
-                ctx.beginPath();
-                ctx.moveTo(0, yy);
-                ctx.lineTo(canvas.width, yy);
+                const pulse = Math.sin(t * 2.5 + l.y * 0.02) * 0.1 + 0.25;
+                ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(W, yy);
                 ctx.strokeStyle = `rgba(${r},${g},${b},${pulse.toFixed(2)})`;
-                ctx.lineWidth = 1.2;
-                ctx.stroke();
+                ctx.lineWidth = 1.2; ctx.stroke();
             });
-            // Vertical lines: FROM horizon UP to vanishing point (infinite road effect)
-            const sp = 60;
-            for (let x = -(offset % sp); x < canvas.width + sp; x += sp) {
-                // Lines spread out from vanishing point downward
-                const spread = 2.5;
-                const bx = vpX + (x - vpX) * spread;
-                const alpha = 0.2 + Math.sin(t * 1.5 + x * 0.01) * 0.05;
-                ctx.beginPath();
-                ctx.moveTo(vpX, vpY);
-                ctx.lineTo(bx, canvas.height);
+            // Vertical lines (from vanishing point)
+            for (let x = -(offset % 60); x < W + 60; x += 60) {
+                const bx = vpX + (x - vpX) * 2.5;
+                const alpha = 0.18 + Math.sin(t * 1.5 + x * 0.01) * 0.05;
+                ctx.beginPath(); ctx.moveTo(vpX, vpY); ctx.lineTo(bx, H);
                 ctx.strokeStyle = `rgba(${r},${g},${b},${alpha.toFixed(2)})`;
-                ctx.lineWidth = 1.2;
-                ctx.stroke();
+                ctx.lineWidth = 1.2; ctx.stroke();
             }
-            // Horizon line glow
-            ctx.beginPath();
-            ctx.moveTo(0, horizon);
-            ctx.lineTo(canvas.width, horizon);
-            ctx.strokeStyle = `rgba(${r},${g},${b},0.7)`;
-            ctx.lineWidth = 2.5;
-            ctx.stroke();
-            // Palm trees (draw after grid so they overlay)
-            palms.forEach(p => {
-                const px = canvas.width * p.x;
-                const py = canvas.height;
-                const ph = p.height;
-                const pt = p.trunk;
-                drawPalm(px, py, ph, pt);
-            });
-            // Scanlines (subtle)
-            for (let y = 0; y < canvas.height; y += 4) {
-                ctx.fillStyle = `rgba(0,0,0,0.05)`;
-                ctx.fillRect(0, y, canvas.width, 1.5);
+            // Horizon glow
+            ctx.beginPath(); ctx.moveTo(0, horizon); ctx.lineTo(W, horizon);
+            ctx.strokeStyle = `rgba(${r},${g},${b},0.7)`; ctx.lineWidth = 2.5; ctx.stroke();
+            // Palms
+            palms.forEach(p => { drawPalm(W * p.x, H, p.height, p.trunk); });
+            // Scanlines
+            for (let y = 0; y < H; y += 4) {
+                ctx.fillStyle = 'rgba(0,0,0,0.04)'; ctx.fillRect(0, y, W, 1.5);
             }
-            // Random glitch bars
-            if (Math.random() < 0.02) {
-                ctx.fillStyle = `rgba(${(r+100)%255},${(g+80)%255},${(b+120)%255},0.3)`;
-                ctx.fillRect(0, Math.random() * canvas.height, canvas.width, Math.random() * 4 + 1);
+            // Glitch
+            if (Math.random() < 0.018) {
+                ctx.fillStyle = `rgba(${(r+100)%255},${(g+80)%255},${(b+120)%255},0.25)`;
+                ctx.fillRect(0, Math.random() * H, W, Math.random() * 3 + 1);
             }
-            // Top color bar
-            const topBar = ctx.createLinearGradient(0, 0, 0, 3);
-            topBar.addColorStop(0, `rgba(${r},${g},${b},0.4)`);
-            topBar.addColorStop(1, 'transparent');
-            ctx.fillStyle = topBar;
-            ctx.fillRect(0, 0, canvas.width, 3);
-            offset += 0.5;
+            // Top bar
+            ctx.fillStyle = ctx.createLinearGradient(0, 0, 0, 3);
+            ctx.fillRect(0, 0, W, 3);
+            offset += 0.4;
             animFrame = requestAnimationFrame(drawCyber);
         }
         drawCyber();
