@@ -1,18 +1,23 @@
 {
-    "accent": "#7c3aed",
+    "accent": "#ff00ff",
     "live": "#000000",
-    "bgPrimary": "#04020c",
-    "bgSecondary": "#080614",
-    "bgCard": "#0e0c20",
-    "bgCardHover": "#16142e",
-    "textPrimary": "#ede9fe",
-    "textSecondary": "#c4b5fd",
+    "bgPrimary": "#0a000a",
+    "bgSecondary": "#120012",
+    "bgCard": "#1a001a",
+    "bgCardHover": "#240024",
+    "textPrimary": "#ffffff",
+    "textSecondary": "#ff00ff",
     "bgImage": "",
-    "bgAnimation": "galaxy",
-    "animationColor": "#7c3aed",
-    "animationSpeed": "8",
-    "bgGradient1": "",
-    "bgGradient2": "",
-    "bgGradientAngle": "180",
-    "accentGlow": "rgba(124,58,237,0.3)"
+    "bgAnimation": "grid",
+    "animationColor": "#ff00ff",
+    "animationSpeed": "10",
+    "bgGradient1": "#0000ff",
+    "bgGradient2": "#ff00ff",
+    "bgGradientAngle": "90",
+    "accentGlow": "rgba(255,0,255,0.3)",
+    "cardStyle": {
+        "borderRadius": "4px",
+        "shadow": "0 2px 4px rgba(255,0,255,0.5)"
+    },
+    "intro": "slide"
 }
