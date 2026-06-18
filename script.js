@@ -27,7 +27,7 @@ let currentTheme = {};
 let activeFilters = new Set();
 let activeCodeFilters = new Set();
 let codesLayout = 'list';
-let shopLayout = 'list';
+let shopLayout = 'grid-2';
 let animFrame = null;
 
 // ─── LOAD DATA ────────────────────────────────────────────────────────────
@@ -900,15 +900,19 @@ function renderAffiliates() {
     container.innerHTML = '';
     container.className = 'affiliates-grid layout-' + shopLayout;
     
-    const sorted = [...(siteData.affiliates || [])].sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999));
-    // HOT: top 2 by clicks
+    const sorted = [...(siteData.affiliates || [])];
+    // HOT: top 2 by clicks go first
     const byClicks = [...sorted].sort((a,b) => (b.clicks||0) - (a.clicks||0));
     const hotIds = new Set();
     for (let i = 0; i < Math.min(2, byClicks.length); i++) {
         if ((byClicks[i].clicks||0) > 0) hotIds.add(byClicks[i].id);
     }
+    // Sort: HOT first (by clicks), then by sort_order descending (newest first)
+    const hotItems = sorted.filter(a => hotIds.has(a.id)).sort((a,b) => (b.clicks||0) - (a.clicks||0));
+    const otherItems = sorted.filter(a => !hotIds.has(a.id)).sort((a, b) => (b.sort_order||0) - (a.sort_order||0));
+    const finalSorted = [...hotItems, ...otherItems];
 
-    sorted.forEach(aff => {
+    finalSorted.forEach(aff => {
         const isHot = hotIds.has(aff.id);
         const features = normalizeTags(aff.features || aff.tags);
         const maxTags = 4;
