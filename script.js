@@ -8,8 +8,8 @@
 
 // Icon mappings
 const ICONS = {
-    youtube: 'youtube', twitch: 'tv', kick: 'zap', tiktok: 'music',
-    x: 'x', instagram: 'instagram', snapchat: 'circle', discord: 'message-circle',
+    youtube: 'youtube', twitch: 'twitch', kick: 'zap', tiktok: 'music',
+    x: 'twitter', instagram: 'instagram', snapchat: 'smile', discord: 'message-circle',
     kofi: 'coffee', email: 'mail', link: 'external-link'
 };
 
